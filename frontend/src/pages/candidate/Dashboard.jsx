@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { candidateAPI } from '../../services/api';
-import { Briefcase, FileText, Star, TrendingUp, Sparkles, ArrowRight, Clock } from 'lucide-react';
+import { Briefcase, FileText, Star, TrendingUp, Sparkles, ArrowRight, Clock, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const statusColors = {
   APPLIED: 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300',
@@ -13,6 +14,7 @@ const statusColors = {
 export default function CandidateDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedStat, setSelectedStat] = useState(null);
 
   useEffect(() => {
     candidateAPI.getDashboard().then((res) => {
@@ -24,9 +26,10 @@ export default function CandidateDashboard() {
   if (!data) return <p className="text-center text-slate-500 dark:text-slate-400 py-20">Failed to load dashboard</p>;
 
   const stats = [
-    { label: 'Applications', value: data.stats.totalApplications, icon: FileText, color: 'text-indigo-600 dark:text-indigo-400', tileBg: 'bg-indigo-50/40 dark:bg-indigo-900/10 border-indigo-100/50 dark:border-indigo-800/30 text-indigo-700 dark:text-indigo-300' },
-    { label: 'Shortlisted', value: data.stats.shortlisted, icon: Star, color: 'text-teal-600 dark:text-teal-400', tileBg: 'bg-teal-50/40 dark:bg-teal-900/10 border-teal-100/50 dark:border-teal-800/30 text-teal-700 dark:text-teal-300' },
-    { label: 'Selected', value: data.stats.selected, icon: TrendingUp, color: 'text-slate-600 dark:text-slate-400', tileBg: 'bg-slate-50/60 dark:bg-slate-800/30 border-slate-200/50 dark:border-slate-700/50 text-slate-700 dark:text-slate-300' },
+    { label: 'Applications', value: data.stats.totalApplications, icon: FileText, color: 'text-indigo-600 dark:text-indigo-400', tileBg: 'bg-indigo-50/40 dark:bg-indigo-900/10 border-indigo-100/50 dark:border-indigo-800/30' },
+    { label: 'Shortlisted', value: data.stats.shortlisted, icon: Star, color: 'text-teal-600 dark:text-teal-400', tileBg: 'bg-teal-50/40 dark:bg-teal-900/10 border-teal-100/50 dark:border-teal-800/30' },
+    { label: 'Selected', value: data.stats.selected, icon: TrendingUp, color: 'text-emerald-600 dark:text-emerald-400', tileBg: 'bg-emerald-50/40 dark:bg-emerald-900/10 border-emerald-100/50 dark:border-emerald-800/30' },
+    { label: 'Active Internships', value: data.stats.activeInternships, icon: Briefcase, color: 'text-sky-600 dark:text-sky-400', tileBg: 'bg-sky-50/40 dark:bg-sky-900/10 border-sky-100/50 dark:border-sky-800/30' },
     { label: 'Active Internships', value: data.stats.activeInternships, icon: Briefcase, color: 'text-primary-600 dark:text-primary-400', tileBg: 'bg-primary-50/40 dark:bg-primary-900/10 border-primary-100/50 dark:border-primary-800/30 text-primary-700 dark:text-primary-300' },
   ];
 
@@ -40,7 +43,7 @@ export default function CandidateDashboard() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map(({ label, value, icon: Icon, color, tileBg }) => (
-          <div key={label} className={`rounded-xl border p-5 card-hover transition-colors ${tileBg}`}>
+          <div key={label} onClick={() => setSelectedStat({ label, value })} className={`rounded-xl border p-5 card-hover cursor-pointer transition-colors ${tileBg}`}>
             <div className="flex items-center justify-between mb-3">
               <Icon className={`w-6 h-6 ${color} opacity-80`} />
             </div>
@@ -114,6 +117,70 @@ export default function CandidateDashboard() {
           <Sparkles className="w-4 h-4" /> View Matches
         </Link>
       </div>
+
+      <AnimatePresence>
+        {selectedStat && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setSelectedStat(null)}
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              className="relative w-full max-w-md bg-white dark:bg-[#111827] rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden"
+            >
+              <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-navy dark:text-white">{selectedStat.label}</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">({selectedStat.value} total)</p>
+                </div>
+                <button onClick={() => setSelectedStat(null)} className="p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-400 transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6 max-h-[50vh] overflow-y-auto w-full">
+                {(() => {
+                  let filtered = [];
+                  if (selectedStat.label === 'Applications') filtered = data.recentApplications;
+                  else if (selectedStat.label === 'Shortlisted') filtered = data.recentApplications.filter(a => a.status === 'SHORTLISTED');
+                  else if (selectedStat.label === 'Selected') filtered = data.recentApplications.filter(a => a.status === 'SELECTED');
+                  
+                  if (selectedStat.label === 'Active Internships') {
+                     return (
+                       <div className="text-center py-6">
+                         <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">You have {selectedStat.value} total active internships available platform-wide.</p>
+                         <Link to="/candidate/recommendations" className="text-sm text-primary-600 font-medium hover:underline">Browse Matches</Link>
+                       </div>
+                     )
+                  }
+
+                  if (filtered.length === 0) return <p className="text-center text-sm text-slate-500 py-6">No recent items in this category.</p>;
+
+                  return (
+                    <div className="space-y-3">
+                      {filtered.map(app => (
+                        <div key={app.id} className="flex justify-between items-center p-3 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                          <div>
+                            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{app.internship.title}</p>
+                            <p className="text-xs text-slate-500">{app.internship.company}</p>
+                          </div>
+                          <span className={`text-[10px] font-semibold px-2 py-1 rounded-full ${statusColors[app.status]}`}>{app.status}</span>
+                        </div>
+                      ))}
+                      <div className="pt-2 text-center">
+                        <Link to="/candidate/applications" className="text-xs text-primary-600 font-medium hover:underline">View All Applications</Link>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

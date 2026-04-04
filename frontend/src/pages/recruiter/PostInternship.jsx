@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { internshipAPI } from '../../services/api';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, IndianRupee } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const inputClass = "w-full px-3 py-2.5 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0B1120] text-navy dark:text-white focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/50 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500";
@@ -68,7 +68,7 @@ export default function PostInternship() {
             <input required value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} className={inputClass} placeholder="e.g. 3 months" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 flex items-center gap-1.5"><DollarSign className="w-4 h-4"/> Stipend (₹/month)</label>
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 flex items-center gap-1.5"><IndianRupee className="w-4 h-4"/> Stipend (₹/month)</label>
             <input type="number" value={form.stipend} onChange={(e) => setForm({ ...form, stipend: e.target.value })} className={inputClass} placeholder="e.g. 15000" min="0" />
           </div>
           <div>

@@ -1,7 +1,20 @@
 import { useState, useEffect } from 'react';
 import { recommendationAPI, applicationAPI } from '../../services/api';
-import { Sparkles, MapPin, Clock, DollarSign, Building2, Zap, ChevronDown, ChevronUp, Send } from 'lucide-react';
+import { Sparkles, MapPin, Clock, IndianRupee, Building2, Zap, ChevronDown, ChevronUp, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+const getSkillColor = (skillName) => {
+  const colors = [
+    'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-300 dark:border-indigo-800/40',
+    'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-900/20 dark:text-teal-300 dark:border-teal-800/40',
+    'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800/40',
+    'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-900/20 dark:text-sky-300 dark:border-sky-800/40',
+    'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800/40',
+  ];
+  let hash = 0;
+  for (let i = 0; i < Math.min(skillName.length, 10); i++) hash = skillName.charCodeAt(i) + ((hash << 5) - hash);
+  return colors[Math.abs(hash) % colors.length];
+};
 
 export default function Recommendations() {
   const [recs, setRecs] = useState([]);
@@ -69,7 +82,7 @@ export default function Recommendations() {
                     <div className="flex items-center gap-4 mt-2 text-xs text-slate-500 dark:text-slate-400 flex-wrap">
                       {rec.location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {rec.location}</span>}
                       <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {rec.duration}</span>
-                      {rec.stipend > 0 && <span className="flex items-center gap-1"><DollarSign className="w-3 h-3" /> ₹{rec.stipend}/mo</span>}
+                      {rec.stipend > 0 && <span className="flex items-center gap-1"><IndianRupee className="w-3 h-3" /> ₹{rec.stipend}/mo</span>}
                       <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-medium">{rec.type}</span>
                     </div>
                   </div>
@@ -103,7 +116,7 @@ export default function Recommendations() {
                 {rec.skills?.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-3">
                     {rec.skills.map((s) => (
-                      <span key={s} className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300">{s}</span>
+                      <span key={s} className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${getSkillColor(s)}`}>{s}</span>
                     ))}
                   </div>
                 )}

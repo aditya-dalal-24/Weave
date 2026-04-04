@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { applicationAPI } from '../../services/api';
-import { FileText, Building2, Clock, MapPin, Trash2, X, DollarSign, Wrench } from 'lucide-react';
+import { FileText, Building2, Clock, MapPin, Trash2, X, IndianRupee, Wrench } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -12,6 +12,19 @@ const statusColors = {
 };
 
 const statusLabels = { APPLIED: 'Applied', SHORTLISTED: 'Shortlisted', REJECTED: 'Rejected', SELECTED: 'Selected' };
+
+const getSkillColor = (skillName) => {
+  const colors = [
+    'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-300 dark:border-indigo-800/40',
+    'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-900/20 dark:text-teal-300 dark:border-teal-800/40',
+    'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800/40',
+    'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-900/20 dark:text-sky-300 dark:border-sky-800/40',
+    'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800/40',
+  ];
+  let hash = 0;
+  for (let i = 0; i < Math.min(skillName.length, 10); i++) hash = skillName.charCodeAt(i) + ((hash << 5) - hash);
+  return colors[Math.abs(hash) % colors.length];
+};
 
 export default function Applications() {
   const [apps, setApps] = useState([]);
@@ -133,7 +146,7 @@ export default function Applications() {
                   </div>
                   {selectedApp.internship.stipend > 0 && (
                     <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/50 px-3 py-1.5 rounded-lg">
-                      <DollarSign className="w-4 h-4 text-slate-400" /> ₹{selectedApp.internship.stipend}/month
+                      <IndianRupee className="w-4 h-4 text-slate-400" /> ₹{selectedApp.internship.stipend}/month
                     </div>
                   )}
                   <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/50 px-3 py-1.5 rounded-lg">
@@ -153,7 +166,7 @@ export default function Applications() {
                     <h4 className="text-sm font-bold text-navy dark:text-white mb-2">Required Skills</h4>
                     <div className="flex flex-wrap gap-2">
                       {selectedApp.internship.skills.map(s => (
-                        <span key={s} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-md bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300">
+                        <span key={s} className={`flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-md border ${getSkillColor(s)}`}>
                            {s}
                         </span>
                       ))}

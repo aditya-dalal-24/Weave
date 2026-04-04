@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { internshipAPI } from '../../services/api';
-import { Plus, Edit, Trash2, Briefcase, Users, MapPin, Clock, DollarSign, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Plus, Edit, Trash2, Briefcase, Users, MapPin, Clock, IndianRupee, ToggleLeft, ToggleRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function ManageInternships() {
@@ -62,9 +62,9 @@ export default function ManageInternships() {
                     {i.location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {i.location}</span>}
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {i.duration}</span>
                     {i.stipend > 0 ? (
-                      <span className="flex items-center gap-1"><DollarSign className="w-3 h-3" /> ₹{i.stipend}/mo</span>
+                      <span className="flex items-center gap-1"><IndianRupee className="w-3 h-3" /> ₹{i.stipend}/mo</span>
                     ) : (
-                      <span className="flex items-center gap-1"><DollarSign className="w-3 h-3" /> Unpaid</span>
+                      <span className="flex items-center gap-1"><IndianRupee className="w-3 h-3" /> Unpaid</span>
                     )}
                     <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 font-medium">{i.type}</span>
                     <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {i._count?.applications || 0} applicants</span>
