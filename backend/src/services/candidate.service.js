@@ -68,6 +68,8 @@ class CandidateService {
         firstName: data.firstName,
         lastName: data.lastName,
         phone: data.phone,
+        gender: data.gender,
+        address: data.address,
         bio: data.bio,
         avatar: data.avatar,
         resumeUrl: data.resumeUrl,

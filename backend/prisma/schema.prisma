@@ -61,6 +61,8 @@ model Candidate {
   firstName       String
   lastName        String
   phone           String?
+  gender          String?
+  address         String?
   bio             String?
   avatar          String?
   resumeUrl       String?

@@ -1,4 +1,6 @@
 const candidateService = require('../services/candidate.service');
+const fs = require('fs');
+const pdfParse = require('pdf-parse');
 
 class CandidateController {
   async getDashboard(req, res, next) {
@@ -23,6 +25,51 @@ class CandidateController {
     try {
       const data = await candidateService.updateProfile(req.user.id, req.body);
       res.json({ success: true, data });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async uploadAvatar(req, res, next) {
+    try {
+      if (!req.file) throw new Error('No image file provided');
+      const avatarUrl = `/uploads/${req.file.filename}`;
+      const data = await candidateService.updateProfile(req.user.id, { avatar: avatarUrl });
+      res.json({ success: true, data });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async uploadResume(req, res, next) {
+    try {
+      if (!req.file) throw new Error('No PDF file provided');
+      const resumeUrl = `/uploads/${req.file.filename}`;
+      
+      let extractedSkills = [];
+      try {
+        const dataBuffer = fs.readFileSync(req.file.path);
+        const data = await pdfParse(dataBuffer);
+        const text = data.text.toLowerCase();
+        
+        const commonSkills = ['javascript', 'react', 'react js', 'node', 'node.js', 'python', 'java', 'c++', 'html', 'css', 'sql', 'mongodb', 'docker', 'aws', 'typescript', 'figma', 'git', 'express', 'angular', 'vue'];
+        
+        extractedSkills = commonSkills.filter(skill => text.includes(skill.toLowerCase()));
+        
+        if (extractedSkills.length > 0) {
+          for (const skill of extractedSkills) {
+            try {
+              let displaySkill = skill === 'node.js' ? 'Node.js' : skill === 'react js' ? 'React JS' : skill.charAt(0).toUpperCase() + skill.slice(1);
+              await candidateService.addSkill(req.user.id, { name: displaySkill, proficiency: 'Intermediate' });
+            } catch (ignore) {}
+          }
+        }
+      } catch (parseError) {
+        console.error('PDF parsing failed:', parseError);
+      }
+
+      const data = await candidateService.updateProfile(req.user.id, { resumeUrl });
+      res.json({ success: true, data, extractedSkills });
     } catch (error) {
       next(error);
     }

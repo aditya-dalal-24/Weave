@@ -4,6 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const http = require('http');
+const path = require('path');
 const { Server } = require('socket.io');
 
 const routes = require('./routes');
@@ -40,6 +41,9 @@ app.use(generalLimiter);
 
 // API Routes
 app.use('/api', routes);
+
+// Static uploads layer
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Error handler
 app.use(errorHandler);

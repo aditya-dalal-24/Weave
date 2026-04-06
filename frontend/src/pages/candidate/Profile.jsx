@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { candidateAPI } from '../../services/api';
-import { Plus, Trash2, GraduationCap, Wrench, MapPin, Save, Lightbulb, X } from 'lucide-react';
+import { Plus, Trash2, GraduationCap, Wrench, MapPin, Save, Lightbulb, X, User, Upload, FileText, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const inputClass = "w-full px-3 py-2.5 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0B1120] text-navy dark:text-white focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/50 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500";
@@ -10,12 +10,14 @@ export default function CandidateProfile() {
   const [suggestions, setSuggestions] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingResume, setUploadingResume] = useState(false);
   const [activeTab, setActiveTab] = useState('personal');
   const [newSkill, setNewSkill] = useState({ name: '', proficiency: 'Intermediate' });
   const [showSkillForm, setShowSkillForm] = useState(false);
   const [newEdu, setNewEdu] = useState({ institution: '', degree: '', field: '', startDate: '', endDate: '', grade: '' });
   const [showEduForm, setShowEduForm] = useState(false);
-  const [personalForm, setPersonalForm] = useState({ firstName: '', lastName: '', phone: '', bio: '' });
+  const [personalForm, setPersonalForm] = useState({ firstName: '', lastName: '', phone: '', address: '', gender: '', bio: '' });
   const [prefForm, setPrefForm] = useState({ locations: '', types: [], industries: '', minStipend: 0 });
 
   useEffect(() => {
@@ -28,7 +30,7 @@ export default function CandidateProfile() {
       const res = await candidateAPI.getProfile();
       const p = res.data.data;
       setProfile(p);
-      setPersonalForm({ firstName: p.firstName || '', lastName: p.lastName || '', phone: p.phone || '', bio: p.bio || '' });
+      setPersonalForm({ firstName: p.firstName || '', lastName: p.lastName || '', phone: p.phone || '', address: p.address || '', gender: p.gender || '', bio: p.bio || '' });
       if (p.preferences) {
         setPrefForm({
           locations: p.preferences.locations?.join(', ') || '',
@@ -53,6 +55,44 @@ export default function CandidateProfile() {
     } catch (err) {
       toast.error(err.response?.data?.message || 'Update failed');
     } finally { setSaving(false); }
+  };
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('avatar', file);
+    setUploadingAvatar(true);
+    try {
+      await candidateAPI.uploadAvatar(formData);
+      toast.success('Profile photo updated!');
+      loadProfile();
+    } catch (err) {
+      toast.error('Failed to upload photo');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleResumeUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('resume', file);
+    setUploadingResume(true);
+    toast.loading('Processing resume...', { id: 'resume' });
+    try {
+      const res = await candidateAPI.uploadResume(formData);
+      toast.success('Resume uploaded successfully!', { id: 'resume' });
+      if (res.data.extractedSkills && res.data.extractedSkills.length > 0) {
+        toast.success(`Extracted skills: ${res.data.extractedSkills.join(', ')}`);
+      }
+      loadProfile();
+    } catch (err) {
+      toast.error('Failed to upload resume', { id: 'resume' });
+    } finally {
+      setUploadingResume(false);
+    }
   };
 
   const addSkill = async () => {
@@ -111,6 +151,7 @@ export default function CandidateProfile() {
 
   const tabs = [
     { id: 'personal', label: 'Personal Info' },
+    { id: 'resume', label: 'Resume' },
     { id: 'education', label: 'Education' },
     { id: 'skills', label: 'Skills' },
     { id: 'preferences', label: 'Preferences' },
@@ -156,6 +197,23 @@ export default function CandidateProfile() {
       {/* Personal Info */}
       {activeTab === 'personal' && (
         <div className="bg-white dark:bg-[#111827] rounded-xl border border-slate-200 dark:border-slate-700/50 p-6">
+          
+          <div className="flex items-center gap-6 mb-6 pb-6 border-b border-slate-100 dark:border-slate-800">
+            <div className="relative group">
+              <div className="w-20 h-20 rounded-full border-2 border-slate-200 dark:border-slate-700 overflow-hidden bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
+                {profile.avatar ? <img src={`http://localhost:5000${profile.avatar}`} alt="Avatar" className="w-full h-full object-cover" /> : <User className="w-8 h-8 text-slate-400" />}
+              </div>
+              <label className="absolute inset-0 flex items-center justify-center bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity z-10">
+                <span className="text-[10px] font-semibold">{uploadingAvatar ? '...' : 'Upload'}</span>
+                <input type="file" accept="image/*" className="hidden" disabled={uploadingAvatar} onChange={handleAvatarUpload} />
+              </label>
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-navy dark:text-white">Profile Photo</h2>
+              <p className="text-xs text-slate-500 mt-1">Upload a professional headshot</p>
+            </div>
+          </div>
+
           <h2 className="text-lg font-semibold text-navy dark:text-white mb-4">Personal Information</h2>
           <div className="grid sm:grid-cols-2 gap-4 mb-4">
             <div>
@@ -174,6 +232,16 @@ export default function CandidateProfile() {
               <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Email</label>
               <input value={profile.user?.email || ''} disabled className="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0B1120] text-slate-400 dark:text-slate-500" />
             </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Gender</label>
+              <select value={personalForm.gender} onChange={(e) => setPersonalForm({ ...personalForm, gender: e.target.value })} className={inputClass}>
+                <option value="">Select Gender</option><option value="MALE">Male</option><option value="FEMALE">Female</option><option value="OTHER">Other</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Address</label>
+              <input value={personalForm.address} onChange={(e) => setPersonalForm({ ...personalForm, address: e.target.value })} className={inputClass} placeholder="e.g. City, State, Country" />
+            </div>
           </div>
           <div className="mb-4">
             <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Bio</label>
@@ -183,6 +251,39 @@ export default function CandidateProfile() {
           <button onClick={savePersonal} disabled={saving} className="px-5 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-60 flex items-center gap-2">
             <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save Changes'}
           </button>
+        </div>
+      )}
+
+      {/* Resume Tab */}
+      {activeTab === 'resume' && (
+        <div className="bg-white dark:bg-[#111827] rounded-xl border border-slate-200 dark:border-slate-700/50 p-6">
+          <h2 className="text-lg font-semibold text-navy dark:text-white mb-4">Resume Upload</h2>
+          
+          <div className="border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-8 flex flex-col items-center justify-center text-center bg-slate-50/50 dark:bg-[#0B1120]/50 mb-6 relative">
+            <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400 rounded-full flex items-center justify-center mb-3">
+              <FileText className="w-6 h-6" />
+            </div>
+            <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-1">Upload your latest resume</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto mb-4">PDF files only. We will automatically extract your skills to update your profile.</p>
+            
+            <label className="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg cursor-pointer transition-colors inline-block relative">
+              {uploadingResume ? 'Processing PDF...' : 'Select PDF File'}
+              <input type="file" accept="application/pdf" className="hidden" disabled={uploadingResume} onChange={handleResumeUpload} />
+            </label>
+          </div>
+
+          {profile.resumeUrl && (
+            <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800/40 rounded-xl">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-500" />
+                <div>
+                  <p className="text-sm font-semibold text-green-800 dark:text-green-400">Resume Uploaded Successfully</p>
+                  <p className="text-xs text-green-700 dark:text-green-500/70 truncate max-w-xs">{profile.resumeUrl.split('-').pop()}</p>
+                </div>
+              </div>
+              <a href={`http://localhost:5000${profile.resumeUrl}`} target="_blank" rel="noreferrer" className="text-xs font-semibold text-green-700 dark:text-green-400 hover:underline">View Uploaded PDF</a>
+            </div>
+          )}
         </div>
       )}
 
