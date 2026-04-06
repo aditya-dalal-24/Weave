@@ -104,7 +104,7 @@ export default function Applicants() {
                       <GraduationCap className="w-3 h-3" /> {app.candidate.education[0].degree} in {app.candidate.education[0].field}
                     </p>
                   )}
-                  {app.matchScore && (
+                  {typeof app.matchScore === 'number' && (
                     <span className="ml-11 mt-1.5 inline-block text-xs font-semibold px-2 py-0.5 rounded-full bg-primary-50 dark:bg-primary-900/25 text-primary-700 dark:text-primary-300">{app.matchScore}% match</span>
                   )}
                 </div>
