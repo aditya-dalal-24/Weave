@@ -75,6 +75,102 @@ class CandidateController {
     }
   }
 
+  async extractResume(req, res, next) {
+    try {
+      const candidateProfile = await candidateService.getProfile(req.user.id);
+      if (!candidateProfile || !candidateProfile.resumeUrl) {
+        throw new Error('No resume uploaded to extract from');
+      }
+
+      const path = require('path');
+      const filePath = path.join(__dirname, '../../', candidateProfile.resumeUrl.replace(/^\//, ''));
+      
+      if (!fs.existsSync(filePath)) {
+        throw new Error('Resume file not found on server');
+      }
+
+      const dataBuffer = fs.readFileSync(filePath);
+      const data = await pdfParse(dataBuffer);
+      const text = data.text;
+      
+      let updates = {};
+      let extractedData = { phone: null, links: [], education: [] };
+      
+      const phoneRegex = /(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/;
+      const phoneMatch = text.match(phoneRegex);
+      if (phoneMatch && !candidateProfile.phone) {
+         extractedData.phone = phoneMatch[0];
+         updates.phone = extractedData.phone;
+      }
+
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      const urls = text.match(urlRegex) || [];
+      const relevantUrls = urls.filter(url => url.toLowerCase().includes('linkedin') || url.toLowerCase().includes('github') || url.toLowerCase().includes('portfolio'));
+      
+      if (relevantUrls.length > 0) {
+         const uniqueUrls = [...new Set(relevantUrls)];
+         extractedData.links = uniqueUrls;
+         const linksText = "\n\nLinks Extracted:\n" + uniqueUrls.join('\n');
+         updates.bio = (candidateProfile.bio || '') + linksText;
+      }
+
+      const lines = text.split('\n');
+      for (const line of lines) {
+         if (line.trim().length === 0) continue;
+         const lower = line.toLowerCase();
+         const hasInst = lower.includes('university') || lower.includes('college') || lower.includes('institute') || lower.includes('school') || lower.includes('academy');
+         const hasDegree = lower.includes('b.tech') || lower.includes('btech') || lower.includes('bachelor') || lower.includes('master') || lower.includes('degree') || lower.includes('b.sc') || lower.includes('b.e') || lower.includes('diploma');
+         const isYear = /(20\d{2})/.test(lower);
+         
+         if (hasInst || hasDegree || isYear) {
+             // Only guess as education if it has a keyword
+             if (hasInst || hasDegree) {
+               let degreeGuess = 'Degree';
+               if (lower.includes('b.tech') || lower.includes('btech') || lower.includes('bachelor') || lower.includes('b.sc') || lower.includes('b.e')) degreeGuess = 'Bachelor';
+               else if (lower.includes('master')) degreeGuess = 'Master';
+               else if (lower.includes('diploma')) degreeGuess = 'Diploma';
+               
+               extractedData.education.push({
+                  institution: hasInst ? line.trim().substring(0, 50) : 'Extracted Institution',
+                  degree: degreeGuess,
+                  field: 'Extracted Field',
+               });
+               
+               try {
+                  await candidateService.addEducation(req.user.id, {
+                     institution: hasInst ? line.trim().substring(0, 50) : 'Extracted Institution',
+                     degree: degreeGuess,
+                     field: 'Extracted Field (Please edit)',
+                     startDate: '2020-01-01',
+                     endDate: '2024-01-01'
+                  });
+               } catch (ignored) {}
+               break; // limit to 1 entry for now
+             }
+         }
+      }
+
+      if (Object.keys(updates).length > 0) {
+         await candidateService.updateProfile(req.user.id, updates);
+      }
+
+      const commonSkills = ['javascript', 'react', 'react js', 'node', 'node.js', 'python', 'java', 'c++', 'html', 'css', 'sql', 'mongodb', 'docker', 'aws', 'typescript', 'figma', 'git', 'express', 'angular', 'vue'];
+      const extractedSkills = commonSkills.filter(skill => text.toLowerCase().includes(skill.toLowerCase()));
+      if (extractedSkills.length > 0) {
+        for (const skill of extractedSkills) {
+          try {
+            let displaySkill = skill === 'node.js' ? 'Node.js' : skill === 'react js' ? 'React JS' : skill.charAt(0).toUpperCase() + skill.slice(1);
+            await candidateService.addSkill(req.user.id, { name: displaySkill, proficiency: 'Intermediate' });
+          } catch (ignore) {}
+        }
+      }
+
+      res.json({ success: true, message: 'Details extracted', data: extractedData });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async addEducation(req, res, next) {
     try {
       const data = await candidateService.addEducation(req.user.id, req.body);

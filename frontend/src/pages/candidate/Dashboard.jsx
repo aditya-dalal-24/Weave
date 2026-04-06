@@ -30,7 +30,7 @@ export default function CandidateDashboard() {
     { label: 'Shortlisted', value: data.stats.shortlisted, icon: Star, color: 'text-teal-600 dark:text-teal-400', tileBg: 'bg-teal-50/40 dark:bg-teal-900/10 border-teal-100/50 dark:border-teal-800/30' },
     { label: 'Selected', value: data.stats.selected, icon: TrendingUp, color: 'text-emerald-600 dark:text-emerald-400', tileBg: 'bg-emerald-50/40 dark:bg-emerald-900/10 border-emerald-100/50 dark:border-emerald-800/30' },
     { label: 'Active Internships', value: data.stats.activeInternships, icon: Briefcase, color: 'text-sky-600 dark:text-sky-400', tileBg: 'bg-sky-50/40 dark:bg-sky-900/10 border-sky-100/50 dark:border-sky-800/30' },
-    { label: 'Active Internships', value: data.stats.activeInternships, icon: Briefcase, color: 'text-primary-600 dark:text-primary-400', tileBg: 'bg-primary-50/40 dark:bg-primary-900/10 border-primary-100/50 dark:border-primary-800/30 text-primary-700 dark:text-primary-300' },
+    { label: 'Profile Strength', value: `${data.profile.profileStrength}%`, icon: Sparkles, color: 'text-primary-600 dark:text-primary-400', tileBg: 'bg-primary-50/40 dark:bg-primary-900/10 border-primary-100/50 dark:border-primary-800/30 text-primary-700 dark:text-primary-300' },
   ];
 
   return (
@@ -41,7 +41,7 @@ export default function CandidateDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {stats.map(({ label, value, icon: Icon, color, tileBg }) => (
           <div key={label} onClick={() => setSelectedStat({ label, value })} className={`rounded-xl border p-5 card-hover cursor-pointer transition-colors ${tileBg}`}>
             <div className="flex items-center justify-between mb-3">

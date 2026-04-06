@@ -55,6 +55,7 @@ export const candidateAPI = {
   updateProfile: (data) => api.put('/candidate/profile', data),
   uploadAvatar: (formData) => api.post('/candidate/profile/avatar', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   uploadResume: (formData) => api.post('/candidate/profile/resume', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  extractResume: () => api.post('/candidate/profile/extract-resume'),
   addEducation: (data) => api.post('/candidate/education', data),
   updateEducation: (id, data) => api.put(`/candidate/education/${id}`, data),
   deleteEducation: (id) => api.delete(`/candidate/education/${id}`),

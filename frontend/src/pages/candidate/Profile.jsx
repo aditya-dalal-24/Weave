@@ -12,6 +12,7 @@ export default function CandidateProfile() {
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingResume, setUploadingResume] = useState(false);
+  const [extracting, setExtracting] = useState(false);
   const [activeTab, setActiveTab] = useState('personal');
   const [newSkill, setNewSkill] = useState({ name: '', proficiency: 'Intermediate' });
   const [showSkillForm, setShowSkillForm] = useState(false);
@@ -92,6 +93,25 @@ export default function CandidateProfile() {
       toast.error('Failed to upload resume', { id: 'resume' });
     } finally {
       setUploadingResume(false);
+    }
+  };
+
+  const handleExtractResume = async () => {
+    setExtracting(true);
+    toast.loading('Analyzing resume...', { id: 'extract' });
+    try {
+      const res = await candidateAPI.extractResume();
+      let extractedMsg = 'Extracted: ';
+      if (res.data.data.phone) extractedMsg += `Phone, `;
+      if (res.data.data.links?.length > 0) extractedMsg += `Links, `;
+      if (res.data.data.education?.length > 0) extractedMsg += `Education `;
+      
+      toast.success(extractedMsg || 'Resume extracted successfully', { id: 'extract' });
+      loadProfile();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to extract resume', { id: 'extract' });
+    } finally {
+      setExtracting(false);
     }
   };
 
@@ -273,7 +293,7 @@ export default function CandidateProfile() {
           </div>
 
           {profile.resumeUrl && (
-            <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800/40 rounded-xl">
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between p-4 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800/40 rounded-xl mt-4">
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-500" />
                 <div>
@@ -281,7 +301,12 @@ export default function CandidateProfile() {
                   <p className="text-xs text-green-700 dark:text-green-500/70 truncate max-w-xs">{profile.resumeUrl.split('-').pop()}</p>
                 </div>
               </div>
-              <a href={`http://localhost:5000${profile.resumeUrl}`} target="_blank" rel="noreferrer" className="text-xs font-semibold text-green-700 dark:text-green-400 hover:underline">View Uploaded PDF</a>
+              <div className="flex items-center gap-3">
+                 <button onClick={handleExtractResume} disabled={extracting} className="px-3 py-1.5 bg-green-600 text-white rounded-md text-xs font-semibold hover:bg-green-700 transition disabled:opacity-50">
+                    {extracting ? 'Extracting...' : 'Extract Details'}
+                 </button>
+                 <a href={`http://localhost:5000${profile.resumeUrl}`} target="_blank" rel="noreferrer" className="text-xs font-semibold text-green-700 dark:text-green-400 hover:underline border border-green-300 dark:border-green-800 rounded-md px-3 py-1.5 transition">View PDF</a>
+              </div>
             </div>
           )}
         </div>

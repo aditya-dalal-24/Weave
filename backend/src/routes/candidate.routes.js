@@ -10,6 +10,7 @@ router.get('/profile', candidateController.getProfile);
 router.put('/profile', candidateController.updateProfile);
 router.post('/profile/avatar', upload.single('avatar'), candidateController.uploadAvatar);
 router.post('/profile/resume', upload.single('resume'), candidateController.uploadResume);
+router.post('/profile/extract-resume', candidateController.extractResume);
 router.post('/education', candidateController.addEducation);
 router.put('/education/:id', candidateController.updateEducation);
 router.delete('/education/:id', candidateController.deleteEducation);

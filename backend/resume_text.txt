@@ -1,0 +1,66 @@
+
+
+Aditya Dalal
++91 9173782416| dalal.aditya.2456@gmail.com| LinkedIn| GitHub
+Education
+Pandit Deendayal Energy UniversityGandhinagar, Gujarat, India
+Bachelor’s Degree in Computer Science, CGPA: 8.872024 – Present
+Projects
+UniTrack| Spring Boot, PGSQL, HTML, CSS, JavaScript, React.jsFebruary 2025 – Present
+•
+Developing a full-stack student academics management system (attendance, marks, assignments, fees, timetables)
+using React, Spring Boot, and PostgreSQL with RESTful APIs.
+•
+Built a parallel version using Node.js, PostgreSQL, and HTML/CSS/JS, focusing on core backend logic and system
+design.
+•
+Leveraging AI-assisted development workflows to accelerate learning and improve full-stack engineering skills.
+Canopy| Next.js, React, FastAPI, PGSQL, Groq LLM, Pinecone, Zustand, React QueryMarch 2025 – Present
+•
+Built an AI-powered HR intelligence platform that predicts employee attrition by analyzing sentiment from emails
+and meeting transcripts while tracking commitments in real time.
+•
+Designed a RAG-based system using Groq LLM and Pinecone to generate contextual insights and smart meeting
+briefs.
+•
+Presented this solution at Breach PDEU 2026 Hackathon and secured 1st place.
+•
+Working demo:  Link
+InternMatch| Node.js, PGSQL, Express.js, HTML, CSS, JavaScriptFebruary 2025 – Present
+•
+Developing an AI-based internship allocation engine to match students with roles based on skills, with recruiter-side
+listing and management features.
+•
+Built using Node.js with a responsive HTML/CSS interface, implementing core matching logic and system
+workflows.
+•
+Developed as part of Smart India Hackathon 2025, securing Top 15 at college level, while leveraging AI tools
+for rapid prototyping and development.
+Experience
+Event Management Core Team MemberSeptember 2025 – Present
+ENCODE - The Computer Science Club of PDEUGandhinagar, India
+•
+Managed logistics and coordinated execution of coding events and technical games.
+•
+Worked closely with senior team members placed in leading MNCs to ensure smooth planning and operations.
+EditorAugust 2025 – Present
+CSE Newsletter Team PDEUGandhinagar, India
+•
+Conducted interviews with seniors placed at top companies and compiled featured insights.
+•
+Hosted “Startup Pe Charcha” interviewing startup founders across colleges with strong audience engagement.
+Skills
+Programming Languages:  Java, C/C++, Python, SQL, HTML, CSS, JavaScript
+Databases:  MySQL, PostgreSQL
+Tools:  Spring Boot, JDBC, Maven, Postman, Git, GitHub, IntelliJ IDEA, VS Code, MySQL Workbench, pgAdmin
+Core Concepts:  Data Structures and Algorithms, DBMS, OOP, Software Engineering, RDBMS
+Soft Skills:  Public Speaking, Presentation, Communication, Leadership, Problem-solving, Teamwork
+Certifications and Achievements
+NPTEL Certification:  Data Structures and Algorithms in Java
+Hackathons:  Won the first prize in Breach PDEU 2026 - Gujarat’s biggest FinTech hackathon.  Also
+participated in multiple hackathons including ODOO Hackathon, Adobe Hackathon, HackOut (DAI-ICT),
+Smart India Hackathon, and AWS AI for Bharat gaining hands-on experience through project development and
+mentor interactions.
+HackerRank:  4 star badge in Java
+Codeforces:  Max rating - 1011
+CodeChef :  Max rating - 1284
