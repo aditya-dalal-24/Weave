@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { candidateAPI } from '../../services/api';
-import { Plus, Trash2, GraduationCap, Wrench, MapPin, Save, Lightbulb, X, User, Upload, FileText, CheckCircle2 } from 'lucide-react';
+import { Plus, Trash2, GraduationCap, Wrench, MapPin, Save, Lightbulb, X, User, Upload, FileText, CheckCircle2, Edit2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const inputClass = "w-full px-3 py-2.5 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0B1120] text-navy dark:text-white focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/50 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500";
@@ -18,6 +18,7 @@ export default function CandidateProfile() {
   const [showSkillForm, setShowSkillForm] = useState(false);
   const [newEdu, setNewEdu] = useState({ institution: '', degree: '', field: '', startDate: '', endDate: '', grade: '' });
   const [showEduForm, setShowEduForm] = useState(false);
+  const [editingEdu, setEditingEdu] = useState(null);
   const [personalForm, setPersonalForm] = useState({ firstName: '', lastName: '', phone: '', address: '', gender: '', bio: '' });
   const [prefForm, setPrefForm] = useState({ locations: '', types: [], industries: '', minStipend: 0 });
 
@@ -133,17 +134,36 @@ export default function CandidateProfile() {
     catch { toast.error('Failed'); }
   };
 
-  const addEducation = async () => {
+  const saveEducation = async () => {
     if (!newEdu.institution || !newEdu.degree || !newEdu.field || !newEdu.startDate) {
       toast.error('Please fill required fields'); return;
     }
     try {
-      await candidateAPI.addEducation(newEdu);
-      toast.success('Education added!');
+      if (editingEdu) {
+        await candidateAPI.updateEducation(editingEdu, newEdu);
+        toast.success('Education updated!');
+      } else {
+        await candidateAPI.addEducation(newEdu);
+        toast.success('Education added!');
+      }
       setNewEdu({ institution: '', degree: '', field: '', startDate: '', endDate: '', grade: '' });
+      setEditingEdu(null);
       setShowEduForm(false);
       loadProfile();
     } catch (err) { toast.error(err.response?.data?.message || 'Failed'); }
+  };
+
+  const handleEditEducation = (edu) => {
+    setNewEdu({ 
+       institution: edu.institution, 
+       degree: edu.degree, 
+       field: edu.field, 
+       startDate: edu.startDate ? new Date(edu.startDate).toISOString().substring(0, 10) : '', 
+       endDate: edu.endDate ? new Date(edu.endDate).toISOString().substring(0, 10) : '', 
+       grade: edu.grade || '' 
+    });
+    setEditingEdu(edu.id);
+    setShowEduForm(true);
   };
 
   const deleteEducation = async (id) => {
@@ -317,7 +337,7 @@ export default function CandidateProfile() {
         <div className="bg-white dark:bg-[#111827] rounded-xl border border-slate-200 dark:border-slate-700/50 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-navy dark:text-white">Education</h2>
-            <button onClick={() => setShowEduForm(true)} className="px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white text-xs font-medium rounded-lg flex items-center gap-1">
+            <button onClick={() => { setNewEdu({ institution: '', degree: '', field: '', startDate: '', endDate: '', grade: '' }); setEditingEdu(null); setShowEduForm(true); }} className="px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white text-xs font-medium rounded-lg flex items-center gap-1">
               <Plus className="w-3.5 h-3.5" /> Add
             </button>
           </div>
@@ -325,8 +345,8 @@ export default function CandidateProfile() {
           {showEduForm && (
             <div className="border border-primary-200 dark:border-primary-800/40 rounded-xl p-4 mb-4 bg-primary-50/30 dark:bg-primary-900/10">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium text-slate-800 dark:text-slate-200">New Education</span>
-                <button onClick={() => setShowEduForm(false)}><X className="w-4 h-4 text-slate-400" /></button>
+                <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{editingEdu ? 'Edit Education' : 'New Education'}</span>
+                <button onClick={() => { setShowEduForm(false); setEditingEdu(null); }}><X className="w-4 h-4 text-slate-400" /></button>
               </div>
               <div className="grid sm:grid-cols-2 gap-3 mb-3">
                 <input value={newEdu.institution} onChange={(e) => setNewEdu({ ...newEdu, institution: e.target.value })} placeholder="Institution *" className={inputClass} />
@@ -336,7 +356,7 @@ export default function CandidateProfile() {
                 <input type="date" value={newEdu.startDate} onChange={(e) => setNewEdu({ ...newEdu, startDate: e.target.value })} className={inputClass} />
                 <input type="date" value={newEdu.endDate} onChange={(e) => setNewEdu({ ...newEdu, endDate: e.target.value })} className={inputClass} />
               </div>
-              <button onClick={addEducation} className="px-4 py-1.5 bg-primary-600 text-white text-xs font-medium rounded-lg hover:bg-primary-700">Add Education</button>
+              <button onClick={saveEducation} className="px-4 py-1.5 bg-primary-600 text-white text-xs font-medium rounded-lg hover:bg-primary-700">{editingEdu ? 'Update Education' : 'Add Education'}</button>
             </div>
           )}
 
@@ -354,9 +374,14 @@ export default function CandidateProfile() {
                       <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{new Date(edu.startDate).getFullYear()} - {edu.endDate ? new Date(edu.endDate).getFullYear() : 'Present'}{edu.grade ? ` · ${edu.grade}` : ''}</p>
                     </div>
                   </div>
-                  <button onClick={() => deleteEducation(edu.id)} className="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-slate-400 hover:text-red-500 transition-colors">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => handleEditEducation(edu)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => deleteEducation(edu.id)} className="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-slate-400 hover:text-red-500 transition-colors">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
