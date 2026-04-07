@@ -59,6 +59,24 @@ class AdminController {
       next(error);
     }
   }
+
+  async getProfile(req, res, next) {
+    try {
+      const data = await adminService.getProfile(req.user.id);
+      res.json({ success: true, data });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateProfile(req, res, next) {
+    try {
+      const data = await adminService.updateProfile(req.user.id, req.body);
+      res.json({ success: true, data });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new AdminController();

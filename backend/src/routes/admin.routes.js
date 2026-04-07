@@ -10,5 +10,7 @@ router.patch('/users/:userId/toggle', adminController.toggleUserStatus);
 router.get('/verifications', adminController.getPendingVerifications);
 router.patch('/verifications/:verificationId', adminController.reviewVerification);
 router.get('/stats', adminController.getPlatformStats);
+router.get('/profile', adminController.getProfile);
+router.put('/profile', adminController.updateProfile);
 
 module.exports = router;

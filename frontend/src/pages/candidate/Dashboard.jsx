@@ -30,7 +30,6 @@ export default function CandidateDashboard() {
     { label: 'Shortlisted', value: data.stats.shortlisted, icon: Star, color: 'text-teal-600 dark:text-teal-400', tileBg: 'bg-teal-50/40 dark:bg-teal-900/10 border-teal-100/50 dark:border-teal-800/30' },
     { label: 'Selected', value: data.stats.selected, icon: TrendingUp, color: 'text-emerald-600 dark:text-emerald-400', tileBg: 'bg-emerald-50/40 dark:bg-emerald-900/10 border-emerald-100/50 dark:border-emerald-800/30' },
     { label: 'Active Internships', value: data.stats.activeInternships, icon: Briefcase, color: 'text-sky-600 dark:text-sky-400', tileBg: 'bg-sky-50/40 dark:bg-sky-900/10 border-sky-100/50 dark:border-sky-800/30' },
-    { label: 'Profile Strength', value: `${data.profile.profileStrength}%`, icon: Sparkles, color: 'text-primary-600 dark:text-primary-400', tileBg: 'bg-primary-50/40 dark:bg-primary-900/10 border-primary-100/50 dark:border-primary-800/30 text-primary-700 dark:text-primary-300' },
   ];
 
   return (
@@ -41,9 +40,9 @@ export default function CandidateDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map(({ label, value, icon: Icon, color, tileBg }) => (
-          <div key={label} onClick={() => setSelectedStat({ label, value })} className={`rounded-xl border p-5 card-hover cursor-pointer transition-colors ${tileBg}`}>
+          <div key={label} onClick={() => setSelectedStat({ label, value, icon: Icon })} className={`rounded-xl border p-5 card-hover cursor-pointer transition-colors ${tileBg}`}>
             <div className="flex items-center justify-between mb-3">
               <Icon className={`w-6 h-6 ${color} opacity-80`} />
             </div>
@@ -144,34 +143,69 @@ export default function CandidateDashboard() {
               <div className="p-6 max-h-[50vh] overflow-y-auto w-full">
                 {(() => {
                   let filtered = [];
-                  if (selectedStat.label === 'Applications') filtered = data.recentApplications;
-                  else if (selectedStat.label === 'Shortlisted') filtered = data.recentApplications.filter(a => a.status === 'SHORTLISTED');
-                  else if (selectedStat.label === 'Selected') filtered = data.recentApplications.filter(a => a.status === 'SELECTED');
+                  let viewAllLink = "/candidate/applications";
+                  let viewAllText = "View All Applications";
                   
-                  if (selectedStat.label === 'Active Internships') {
-                     return (
-                       <div className="text-center py-6">
-                         <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">You have {selectedStat.value} total active internships available platform-wide.</p>
-                         <Link to="/candidate/recommendations" className="text-sm text-primary-600 font-medium hover:underline">Browse Matches</Link>
-                       </div>
-                     )
+                  // Summary Block
+                  const SummaryBlock = () => (
+                    <div className="bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl flex items-center justify-between border border-slate-100 dark:border-slate-700/50 mb-6">
+                      <div>
+                        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total {selectedStat.label}</p>
+                        <p className="text-2xl font-bold text-navy dark:text-white">{selectedStat.value}</p>
+                      </div>
+                      {selectedStat.icon && <selectedStat.icon className="w-8 h-8 text-slate-400 opacity-50" />}
+                    </div>
+                  );
+
+                  if (selectedStat.label === 'Applications') filtered = data.recentApplications || [];
+                  else if (selectedStat.label === 'Shortlisted') filtered = (data.recentApplications || []).filter(a => a.status === 'SHORTLISTED');
+                  else if (selectedStat.label === 'Selected') filtered = (data.recentApplications || []).filter(a => a.status === 'SELECTED');
+                  else if (selectedStat.label === 'Active Internships') {
+                    viewAllLink = "/candidate/recommendations";
+                    viewAllText = "Browse Matches";
+                    filtered = data.recentInternships || [];
                   }
 
-                  if (filtered.length === 0) return <p className="text-center text-sm text-slate-500 py-6">No recent items in this category.</p>;
+                  if (filtered.length === 0) {
+                    return (
+                      <div>
+                        <SummaryBlock />
+                        <div className="text-center py-6">
+                          <p className="text-sm text-slate-500 mb-6">No recent items in this category.</p>
+                          <Link to={viewAllLink} className="w-full py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-primary-500/20 active:scale-[0.98]">
+                            {viewAllText} <ArrowRight className="w-4 h-4" />
+                          </Link>
+                        </div>
+                      </div>
+                    );
+                  }
 
                   return (
-                    <div className="space-y-3">
-                      {filtered.map(app => (
-                        <div key={app.id} className="flex justify-between items-center p-3 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-                          <div>
-                            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{app.internship.title}</p>
-                            <p className="text-xs text-slate-500">{app.internship.company}</p>
+                    <div className="space-y-4">
+                      <SummaryBlock />
+                      <div className="space-y-3">
+                        {filtered.map(item => (
+                          <div key={item.id} className="flex justify-between items-center p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                            <div>
+                              <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                                {selectedStat.label === 'Active Internships' ? item.title : item.internship?.title || 'Unknown Internship'}
+                              </p>
+                              <p className="text-xs text-slate-500">
+                                {selectedStat.label === 'Active Internships' ? item.recruiter?.companyName || 'Unknown Company' : item.internship?.company || 'Unknown Company'}
+                              </p>
+                            </div>
+                            {selectedStat.label === 'Active Internships' ? (
+                              <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300">NEW</span>
+                            ) : (
+                              <span className={`text-[10px] font-semibold px-2 py-1 rounded-full ${statusColors[item.status]}`}>{item.status}</span>
+                            )}
                           </div>
-                          <span className={`text-[10px] font-semibold px-2 py-1 rounded-full ${statusColors[app.status]}`}>{app.status}</span>
-                        </div>
-                      ))}
-                      <div className="pt-2 text-center">
-                        <Link to="/candidate/applications" className="text-xs text-primary-600 font-medium hover:underline">View All Applications</Link>
+                        ))}
+                      </div>
+                      <div className="pt-2">
+                        <Link to={viewAllLink} className="w-full py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-primary-500/20 active:scale-[0.98]">
+                          {viewAllText} <ArrowRight className="w-4 h-4" />
+                        </Link>
                       </div>
                     </div>
                   );

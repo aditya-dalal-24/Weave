@@ -75,6 +75,12 @@ export default function DashboardLayout() {
       ? user.recruiter?.companyName || user.email
       : `${user?.admin?.firstName || ''} ${user?.admin?.lastName || ''}`;
 
+  const avatarUrl = user?.role === 'CANDIDATE'
+    ? user.candidate?.avatar
+    : user?.role === 'RECRUITER'
+      ? user.recruiter?.companyLogo
+      : user?.admin?.avatar;
+
   const handleLogout = async () => {
     await logout();
     navigate('/login');
@@ -164,11 +170,23 @@ export default function DashboardLayout() {
 
           {/* Profile dropdown */}
           <div className="relative">
-            <button onClick={() => setProfileOpen(!profileOpen)} className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-[11px] font-bold shadow-sm">
-                {displayName?.charAt(0)?.toUpperCase() || 'U'}
+            <button onClick={() => setProfileOpen(!profileOpen)} className="flex items-center gap-2.5 p-1 rounded-full sm:rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200">
+              <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-xs font-bold shadow-sm ring-2 ring-white dark:ring-slate-900 ring-offset-2 ring-offset-transparent outline-none">
+                {avatarUrl ? (
+                  <img 
+                    src={avatarUrl} 
+                    alt={displayName} 
+                    className="w-full h-full object-cover" 
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.parentElement.innerHTML = displayName?.charAt(0)?.toUpperCase() || 'U';
+                    }} 
+                  />
+                ) : (
+                  displayName?.charAt(0)?.toUpperCase() || 'U'
+                )}
               </div>
-              <span className="text-[13px] font-medium text-slate-700 dark:text-slate-300 hidden sm:block max-w-[120px] truncate">{displayName}</span>
+              <span className="text-[13px] font-semibold text-slate-700 dark:text-slate-300 hidden sm:block max-w-[120px] truncate">{displayName}</span>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden sm:block" />
             </button>
 

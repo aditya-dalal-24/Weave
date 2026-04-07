@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { recruiterAPI } from '../../services/api';
-import { Briefcase, Users, FileText, Star, Clock, Building2, Plus, ShieldCheck, AlertTriangle, X } from 'lucide-react';
+import { Briefcase, Users, FileText, Star, Clock, Building2, Plus, ShieldCheck, AlertTriangle, X, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const statusColors = {
@@ -63,7 +63,7 @@ export default function RecruiterDashboard() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map(({ label, value, icon: Icon, color, tileBg }) => (
-          <div key={label} onClick={() => setSelectedStat({ label, value })} className={`rounded-xl border p-5 card-hover cursor-pointer transition-colors ${tileBg}`}>
+          <div key={label} onClick={() => setSelectedStat({ label, value, icon: Icon })} className={`rounded-xl border p-5 card-hover cursor-pointer transition-colors ${tileBg}`}>
             <Icon className={`w-6 h-6 ${color} opacity-80 mb-3`} />
             <div className="text-2xl font-bold">{value}</div>
             <div className="text-xs font-medium opacity-70 mt-1">{label}</div>
@@ -83,8 +83,8 @@ export default function RecruiterDashboard() {
             {data.recentApplications.map((app) => (
               <div key={app.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                 <div>
-                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{app.candidate.firstName} {app.candidate.lastName}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Applied for: {app.internship.title}</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{app.candidate?.firstName || 'Unknown'} {app.candidate?.lastName || 'Candidate'}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Applied for: {app.internship?.title || 'Unknown Internship'}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className={`text-[10px] font-semibold px-2 py-1 rounded-full ${statusColors[app.status]}`}>{app.status}</span>
@@ -122,33 +122,76 @@ export default function RecruiterDashboard() {
               <div className="p-6 max-h-[50vh] overflow-y-auto w-full">
                 {(() => {
                   let filtered = [];
-                  if (selectedStat.label === 'Total Applications') filtered = data.recentApplications;
-                  else if (selectedStat.label === 'Shortlisted') filtered = data.recentApplications.filter(a => a.status === 'SHORTLISTED');
+                  let viewAllLink = "/recruiter/applicants";
+                  let viewAllText = "View All Applicants";
+                  
+                  // Summary Block
+                  const SummaryBlock = () => (
+                    <div className="bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl flex items-center justify-between border border-slate-100 dark:border-slate-700/50 mb-6">
+                      <div>
+                        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total {selectedStat.label}</p>
+                        <p className="text-2xl font-bold text-navy dark:text-white">{selectedStat.value}</p>
+                      </div>
+                      {selectedStat.icon && <selectedStat.icon className="w-8 h-8 text-slate-400 opacity-50" />}
+                    </div>
+                  );
+
+                  if (selectedStat.label === 'Total Applications') filtered = data.recentApplications || [];
+                  else if (selectedStat.label === 'Shortlisted') filtered = (data.recentApplications || []).filter(a => a.status === 'SHORTLISTED');
                   
                   if (selectedStat.label === 'Total Internships' || selectedStat.label === 'Active Postings') {
-                     return (
-                       <div className="text-center py-6">
-                         <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">You have {selectedStat.value} {selectedStat.label.toLowerCase()}.</p>
-                         <Link to="/recruiter/internships" className="text-sm text-primary-600 font-medium hover:underline">Manage Internships</Link>
-                       </div>
-                     )
+                    viewAllLink = "/recruiter/internships";
+                    viewAllText = "Manage Internships";
+                    filtered = data.recentInternships || [];
+                    if (selectedStat.label === 'Active Postings') {
+                      filtered = filtered.filter(i => i.isActive);
+                    }
                   }
 
-                  if (filtered.length === 0) return <p className="text-center text-sm text-slate-500 py-6">No recent items in this category.</p>;
+                  if (filtered.length === 0) {
+                    return (
+                      <div>
+                        <SummaryBlock />
+                        <div className="text-center py-6">
+                          <p className="text-sm text-slate-500 mb-6">No recent items in this category.</p>
+                          <Link to={viewAllLink} className="w-full py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-primary-500/20 active:scale-[0.98]">
+                            {viewAllText} <ArrowRight className="w-4 h-4" />
+                          </Link>
+                        </div>
+                      </div>
+                    );
+                  }
 
                   return (
-                    <div className="space-y-3">
-                      {filtered.map(app => (
-                        <div key={app.id} className="flex justify-between items-center p-3 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-                          <div>
-                            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{app.candidate.firstName} {app.candidate.lastName}</p>
-                            <p className="text-xs text-slate-500">{app.internship.title}</p>
+                    <div className="space-y-4">
+                      <SummaryBlock />
+                      <div className="space-y-3">
+                        {filtered.map(item => (
+                          <div key={item.id} className="flex justify-between items-center p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                            {(selectedStat.label === 'Total Internships' || selectedStat.label === 'Active Postings') ? (
+                              <>
+                                <div>
+                                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{item.title}</p>
+                                  <p className="text-xs text-slate-500 text-truncate">{item.description ? item.description.substring(0, 50) + '...' : 'No description'}</p>
+                                </div>
+                                <span className={`w-2 h-2 rounded-full ${item.isActive ? 'bg-green-500' : 'bg-red-400'}`} />
+                              </>
+                            ) : (
+                              <>
+                                <div>
+                                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{item.candidate?.firstName || 'Unknown'} {item.candidate?.lastName || 'Candidate'}</p>
+                                  <p className="text-xs text-slate-500">{item.internship?.title || 'Unknown Internship'}</p>
+                                </div>
+                                <span className={`text-[10px] font-semibold px-2 py-1 rounded-full ${statusColors[item.status]}`}>{item.status}</span>
+                              </>
+                            )}
                           </div>
-                          <span className={`text-[10px] font-semibold px-2 py-1 rounded-full ${statusColors[app.status]}`}>{app.status}</span>
-                        </div>
-                      ))}
-                      <div className="pt-2 text-center">
-                        <Link to="/recruiter/applicants" className="text-xs text-primary-600 font-medium hover:underline">View All Applicants</Link>
+                        ))}
+                      </div>
+                      <div className="pt-2">
+                        <Link to={viewAllLink} className="w-full py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-primary-500/20 active:scale-[0.98]">
+                          {viewAllText} <ArrowRight className="w-4 h-4" />
+                        </Link>
                       </div>
                     </div>
                   );

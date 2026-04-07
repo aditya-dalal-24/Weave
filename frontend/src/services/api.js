@@ -70,6 +70,7 @@ export const recruiterAPI = {
   getDashboard: () => api.get('/recruiter/dashboard'),
   getProfile: () => api.get('/recruiter/profile'),
   updateProfile: (data) => api.put('/recruiter/profile', data),
+  uploadLogo: (formData) => api.post('/recruiter/profile/logo', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   getApplicants: (params) => api.get('/recruiter/applicants', { params }),
   shortlist: (applicationId) => api.patch(`/recruiter/applications/${applicationId}/shortlist`),
   updateStatus: (applicationId, status) => api.patch(`/recruiter/applications/${applicationId}/status`, { status }),
@@ -106,6 +107,9 @@ export const adminAPI = {
   getVerifications: () => api.get('/admin/verifications'),
   reviewVerification: (id, data) => api.patch(`/admin/verifications/${id}`, data),
   getStats: () => api.get('/admin/stats'),
+  getProfile: () => api.get('/admin/profile'),
+  updateProfile: (data) => api.put('/admin/profile', data),
+  uploadAvatar: (formData) => api.post('/admin/profile/avatar', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
 };
 
 // Chat APIs

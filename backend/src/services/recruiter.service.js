@@ -32,10 +32,17 @@ class RecruiterService {
       take: 10,
     });
 
+    const recentInternships = await prisma.internship.findMany({
+      where: { recruiterId: recruiter.id },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+    });
+
     return {
       profile: recruiter,
       stats: { totalInternships, activeInternships, totalApplications, shortlisted },
       recentApplications,
+      recentInternships,
     };
   }
 
@@ -68,9 +75,9 @@ class RecruiterService {
     return prisma.recruiter.update({
       where: { userId },
       data: {
-        companyName: data.companyName,
         designation: data.designation,
         companyLogo: data.companyLogo,
+        phone: data.phone,
         website: data.website,
         about: data.about,
       },

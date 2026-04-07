@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { adminAPI } from '../../services/api';
-import { Users, Briefcase, FileText, ShieldCheck, TrendingUp, Clock } from 'lucide-react';
+import { Users, Briefcase, FileText, ShieldCheck, TrendingUp, Clock, X, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 export default function AdminDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedStat, setSelectedStat] = useState(null);
 
   useEffect(() => {
     adminAPI.getDashboard().then((r) => setData(r.data.data)).catch(console.error).finally(() => setLoading(false));
@@ -31,7 +34,7 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         {stats.map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-white dark:bg-[#111827] rounded-xl border border-slate-200 dark:border-slate-700/50 p-5 card-hover">
+          <div key={label} onClick={() => setSelectedStat({ label, value, icon: Icon })} className="bg-white dark:bg-[#111827] rounded-xl border border-slate-200 dark:border-slate-700/50 p-5 card-hover cursor-pointer">
             <div className={`w-10 h-10 rounded-lg ${bg} flex items-center justify-center mb-3`}>
               <Icon className={`w-5 h-5 ${color}`} />
             </div>
@@ -77,6 +80,142 @@ export default function AdminDashboard() {
           ))}
         </div>
       </div>
+
+      <AnimatePresence>
+        {selectedStat && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setSelectedStat(null)}
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              className="relative w-full max-w-md bg-white dark:bg-[#111827] rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden"
+            >
+              <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-navy dark:text-white">{selectedStat.label}</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">({selectedStat.value} total)</p>
+                </div>
+                <button onClick={() => setSelectedStat(null)} className="p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-400 transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6 max-h-[50vh] overflow-y-auto w-full">
+                {(() => {
+                  let filtered = [];
+                  let viewAllLink = "/admin/users";
+                  let viewAllText = "View All Users";
+                  
+                  // Summary Block
+                  const SummaryBlock = () => (
+                    <div className="bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl flex items-center justify-between border border-slate-100 dark:border-slate-700/50 mb-6">
+                      <div>
+                        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total {selectedStat.label}</p>
+                        <p className="text-2xl font-bold text-navy dark:text-white">{selectedStat.value}</p>
+                      </div>
+                      {selectedStat.icon && <selectedStat.icon className="w-8 h-8 text-slate-400 opacity-50" />}
+                    </div>
+                  );
+
+                  if (selectedStat.label.includes('Users') || selectedStat.label === 'Candidates' || selectedStat.label === 'Recruiters') {
+                    filtered = data.recentUsers || [];
+                    if (selectedStat.label === 'Candidates') filtered = filtered.filter(u => u.role === 'CANDIDATE');
+                    else if (selectedStat.label === 'Recruiters') filtered = filtered.filter(u => u.role === 'RECRUITER');
+                  } else if (selectedStat.label === 'Pending Verifications') {
+                    viewAllLink = "/admin/verifications";
+                    viewAllText = "Review Verifications";
+                    filtered = data.recentVerifications || [];
+                  } else if (selectedStat.label === 'Internships') {
+                    viewAllLink = "/admin/dashboard"; 
+                    viewAllText = "Return to Dashboard";
+                    filtered = data.recentInternships || [];
+                  } else if (selectedStat.label === 'Applications') {
+                    viewAllLink = "/admin/dashboard"; 
+                    viewAllText = "Return to Dashboard";
+                    filtered = data.applicationsByStatus || [];
+                  }
+
+                  if (filtered.length === 0) {
+                    return (
+                      <div>
+                        <SummaryBlock />
+                        <div className="text-center py-6">
+                          <p className="text-sm text-slate-500 mb-6">Overview for {selectedStat.label.toLowerCase()}.</p>
+                          <Link to={viewAllLink} className="w-full py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-primary-500/20 active:scale-[0.98]">
+                            {viewAllText} <ArrowRight className="w-4 h-4" />
+                          </Link>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="space-y-4">
+                      <SummaryBlock />
+                      <div className="space-y-3">
+                        {filtered.map((item, idx) => {
+                          if (selectedStat.label === 'Applications') {
+                            return (
+                              <div key={idx} className="flex justify-between items-center p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                                <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">{item.status}</span>
+                                <span className="text-sm font-bold text-navy dark:text-white">{item._count.status} Applications</span>
+                              </div>
+                            );
+                          }
+                          if (selectedStat.label === 'Internships') {
+                            return (
+                              <div key={item.id} className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{item.title}</p>
+                                <p className="text-xs text-slate-500">{item.recruiter?.companyName || 'Unknown Company'}</p>
+                              </div>
+                            );
+                          }
+                          if (selectedStat.label === 'Pending Verifications') {
+                            return (
+                              <div key={item.id} className="flex justify-between items-center p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                                <div>
+                                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{item.recruiter?.companyName || 'Unknown Company'}</p>
+                                  <p className="text-xs text-slate-500">Requested: {new Date(item.createdAt).toLocaleDateString()}</p>
+                                </div>
+                                <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300">PENDING</span>
+                              </div>
+                            );
+                          }
+                          
+                          // Default Users mapped state
+                          return (
+                            <div key={item.id} className="flex justify-between items-center p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 text-[10px] font-bold">
+                                  {item.email.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[150px]">{item.candidate ? (item.candidate.firstName || 'Candidate') : item.recruiter ? (item.recruiter.companyName || 'Company') : item.email}</p>
+                                  <p className="text-[10px] text-slate-500">{item.role}</p>
+                                </div>
+                              </div>
+                              <span className={`w-2 h-2 rounded-full ${item.isActive ? 'bg-green-500' : 'bg-red-400'}`} />
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="pt-2">
+                        <Link to={viewAllLink} className="w-full py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-primary-500/20 active:scale-[0.98]">
+                          {viewAllText} <ArrowRight className="w-4 h-4" />
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

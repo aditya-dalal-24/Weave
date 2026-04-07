@@ -27,10 +27,18 @@ class CandidateService {
     const selected = await prisma.application.count({ where: { candidateId: candidate.id, status: 'SELECTED' } });
     const activeInternships = await prisma.internship.count({ where: { isActive: true } });
 
+    const recentInternships = await prisma.internship.findMany({
+      where: { isActive: true },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      include: { recruiter: { select: { companyName: true } } }
+    });
+
     return {
       profile: candidate,
       stats: { totalApplications, shortlisted, selected, activeInternships },
       recentApplications: candidate.applications,
+      recentInternships,
     };
   }
 

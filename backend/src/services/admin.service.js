@@ -31,10 +31,25 @@ class AdminService {
       _count: { status: true },
     });
 
+    const recentInternships = await prisma.internship.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      include: { recruiter: { select: { companyName: true } } },
+    });
+
+    const recentVerifications = await prisma.recruiterVerification.findMany({
+      where: { status: 'PENDING' },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      include: { recruiter: { select: { companyName: true } } },
+    });
+
     return {
       stats: { totalUsers, totalCandidates, totalRecruiters, totalInternships, totalApplications, pendingVerifications },
       recentUsers,
       applicationsByStatus,
+      recentInternships,
+      recentVerifications,
     };
   }
 
@@ -165,6 +180,42 @@ class AdminService {
     ]);
 
     return { newUsersThisMonth, newInternshipsThisMonth, newApplicationsThisMonth };
+  }
+
+  async getProfile(userId) {
+    const admin = await prisma.admin.findUnique({
+      where: { userId },
+      include: {
+        user: { select: { email: true } },
+      },
+    });
+
+    if (!admin) {
+      const error = new Error('Admin profile not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    return admin;
+  }
+
+  async updateProfile(userId, data) {
+    const admin = await prisma.admin.findUnique({ where: { userId } });
+    if (!admin) {
+      const error = new Error('Admin profile not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    return prisma.admin.update({
+      where: { userId },
+      data: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone,
+        avatar: data.avatar,
+      },
+    });
   }
 }
 
