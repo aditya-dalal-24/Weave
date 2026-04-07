@@ -39,10 +39,20 @@ export function AuthProvider({ children }) {
 
   const register = async (userData) => {
     const { data } = await authAPI.register(userData);
+    return data.data; // Now returns { message, email }
+  };
+
+  const verifyOtp = async (credentials) => {
+    const { data } = await authAPI.verifyOtp(credentials);
     localStorage.setItem('accessToken', data.data.accessToken);
     localStorage.setItem('refreshToken', data.data.refreshToken);
     setUser(data.data.user);
     return data.data.user;
+  };
+
+  const resendOtp = async (email) => {
+    const { data } = await authAPI.resendOtp(email);
+    return data;
   };
 
   const googleLogin = async (token, role) => {
@@ -65,7 +75,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, googleLogin, logout, fetchUser }}>
+    <AuthContext.Provider value={{ user, loading, login, register, googleLogin, logout, fetchUser, verifyOtp, resendOtp }}>
       {children}
     </AuthContext.Provider>
   );

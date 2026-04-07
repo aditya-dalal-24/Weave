@@ -24,7 +24,12 @@ export default function Login() {
       const routes = { CANDIDATE: '/candidate/dashboard', RECRUITER: '/recruiter/dashboard', ADMIN: '/admin/dashboard' };
       navigate(routes[user.role] || '/');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Login failed');
+      if (err.response?.status === 403 && err.response?.data?.message === 'Email not verified') {
+        toast.error('Email not verified. Please check your inbox.');
+        navigate('/verify-email', { state: { email: form.email } });
+      } else {
+        toast.error(err.response?.data?.message || 'Login failed');
+      }
     } finally {
       setLoading(false);
     }

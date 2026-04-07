@@ -22,6 +22,7 @@ import AdminUsers from './pages/admin/Users';
 import Verifications from './pages/admin/Verifications';
 import Chat from './pages/Chat';
 import Settings from './pages/Settings';
+import VerifyEmail from './pages/VerifyEmail';
 
 function AppRoutes() {
   const { user, loading } = useAuth();
@@ -43,6 +44,7 @@ function AppRoutes() {
       <Route path="/" element={user ? <Navigate to={`/${user.role.toLowerCase()}/dashboard`} replace /> : <Landing />} />
       <Route path="/login" element={user ? <Navigate to={`/${user.role.toLowerCase()}/dashboard`} replace /> : <Login />} />
       <Route path="/register" element={user ? <Navigate to={`/${user.role.toLowerCase()}/dashboard`} replace /> : <Register />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
 
       {/* Candidate */}
       <Route element={<ProtectedRoute roles={['CANDIDATE']}><DashboardLayout /></ProtectedRoute>}>

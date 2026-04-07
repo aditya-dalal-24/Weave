@@ -36,10 +36,9 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      const user = await register(form);
-      toast.success('Account created!');
-      const routes = { CANDIDATE: '/candidate/dashboard', RECRUITER: '/recruiter/dashboard', ADMIN: '/admin/dashboard' };
-      navigate(routes[user.role] || '/');
+      const result = await register(form);
+      toast.success('Account created! Verification code sent.');
+      navigate('/verify-email', { state: { email: form.email } });
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed');
     } finally {

@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const axios = require('axios');
 const prisma = require('../config/database');
 const { OAuth2Client } = require('google-auth-library');
+const { sendOtpEmail } = require('../utils/email.util');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -17,11 +18,17 @@ class AuthService {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+
     const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         role,
+        isVerified: false,
+        otp,
+        otpExpiry,
         ...(role === 'CANDIDATE' && {
           candidate: {
             create: {
@@ -52,10 +59,13 @@ class AuthService {
       select: { id: true, email: true, role: true },
     });
 
-    const tokens = this.generateTokens(user);
-    await this.saveRefreshToken(user.id, tokens.refreshToken);
+    // Send email asynchronously
+    sendOtpEmail(email, otp).catch(err => console.error('Failed to send OTP email:', err));
 
-    return { user, ...tokens };
+    return { 
+      message: 'Verification code sent to your email',
+      email: user.email 
+    };
   }
 
   async login({ email, password }) {
@@ -71,6 +81,12 @@ class AuthService {
     if (!user) {
       const error = new Error('Invalid credentials');
       error.statusCode = 401;
+      throw error;
+    }
+
+    if (!user.isVerified) {
+      const error = new Error('Email not verified');
+      error.statusCode = 403;
       throw error;
     }
 
@@ -98,7 +114,6 @@ class AuthService {
   async googleLogin(accessToken, rolePreference = 'CANDIDATE') {
     let googleProfile;
     try {
-      // Verify token by calling Google's userinfo endpoint
       const response = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
         headers: { Authorization: `Bearer ${accessToken}` }
       });
@@ -122,11 +137,10 @@ class AuthService {
     });
 
     if (user) {
-      // Update existing user with Google ID if not present
       if (!user.googleId || user.authProvider === 'LOCAL') {
         user = await prisma.user.update({
           where: { id: user.id },
-          data: { googleId, authProvider: 'GOOGLE' },
+          data: { googleId, authProvider: 'GOOGLE', isVerified: true },
           include: {
             candidate: { select: { id: true, firstName: true, lastName: true, avatar: true } },
             recruiter: { select: { id: true, companyName: true, companyLogo: true, isVerified: true } },
@@ -135,8 +149,6 @@ class AuthService {
         });
       }
     } else {
-      // Create new user
-      // Role is restricted to CANDIDATE or RECRUITER for Google registration as per request
       const role = (rolePreference === 'RECRUITER' || rolePreference === 'CANDIDATE') ? rolePreference : 'CANDIDATE';
       
       user = await prisma.user.create({
@@ -145,6 +157,7 @@ class AuthService {
           googleId,
           authProvider: 'GOOGLE',
           role,
+          isVerified: true,
           ...(role === 'CANDIDATE' && {
             candidate: {
               create: {
@@ -241,6 +254,49 @@ class AuthService {
     );
 
     return { accessToken, refreshToken };
+  }
+
+  async verifyOtp({ email, otp }) {
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) throw new Error('User not found');
+    if (user.isVerified) throw new Error('Email already verified');
+    if (!user.otp || user.otp !== otp) throw new Error('Invalid verification code');
+    if (new Date() > user.otpExpiry) throw new Error('Verification code expired');
+
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: { isVerified: true, otp: null, otpExpiry: null },
+      include: {
+        candidate: { select: { id: true, firstName: true, lastName: true, avatar: true } },
+        recruiter: { select: { id: true, companyName: true, companyLogo: true, isVerified: true } },
+        admin: { select: { id: true, firstName: true, lastName: true, avatar: true } },
+      },
+    });
+
+    const tokens = this.generateTokens(updatedUser);
+    await this.saveRefreshToken(updatedUser.id, tokens.refreshToken);
+
+    const { password: _, refreshToken: __, ...userData } = updatedUser;
+    return { user: userData, ...tokens };
+  }
+
+  async resendOtp(email) {
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) throw new Error('User not found');
+    if (user.isVerified) throw new Error('Email already verified');
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { otp, otpExpiry },
+    });
+
+    await sendOtpEmail(email, otp);
+    return { success: true, message: 'New verification code sent' };
   }
 
   async saveRefreshToken(userId, refreshToken) {

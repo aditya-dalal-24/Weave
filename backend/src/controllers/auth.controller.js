@@ -68,6 +68,25 @@ class AuthController {
       next(error);
     }
   }
+
+  async verifyOtp(req, res, next) {
+    try {
+      const result = await authService.verifyOtp(req.body);
+      res.json({ success: true, data: result, message: 'Email verified successfully' });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async resendOtp(req, res, next) {
+    try {
+      const { email } = req.body;
+      const result = await authService.resendOtp(email);
+      res.json({ success: true, message: result.message });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new AuthController();

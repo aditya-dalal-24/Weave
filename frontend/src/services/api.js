@@ -47,6 +47,8 @@ export const authAPI = {
   logout: () => api.post('/auth/logout'),
   me: () => api.get('/auth/me'),
   googleLogin: (token, role) => api.post('/auth/google', { token, role }),
+  verifyOtp: (data) => api.post('/auth/verify-otp', data),
+  resendOtp: (email) => api.post('/auth/resend-otp', { email }),
 };
 
 // Candidate APIs
