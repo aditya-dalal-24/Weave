@@ -1,6 +1,10 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const axios = require('axios');
 const prisma = require('../config/database');
+const { OAuth2Client } = require('google-auth-library');
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 class AuthService {
   async register({ email, password, role, firstName, lastName, companyName }) {
@@ -58,9 +62,9 @@ class AuthService {
     const user = await prisma.user.findUnique({
       where: { email },
       include: {
-        candidate: { select: { id: true, firstName: true, lastName: true } },
-        recruiter: { select: { id: true, companyName: true, isVerified: true } },
-        admin: { select: { id: true, firstName: true, lastName: true } },
+        candidate: { select: { id: true, firstName: true, lastName: true, avatar: true } },
+        recruiter: { select: { id: true, companyName: true, companyLogo: true, isVerified: true } },
+        admin: { select: { id: true, firstName: true, lastName: true, avatar: true } },
       },
     });
 
@@ -88,6 +92,98 @@ class AuthService {
 
     const { password: _, refreshToken: __, ...userData } = user;
 
+    return { user: userData, ...tokens };
+  }
+
+  async googleLogin(accessToken, rolePreference = 'CANDIDATE') {
+    let googleProfile;
+    try {
+      // Verify token by calling Google's userinfo endpoint
+      const response = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      googleProfile = response.data;
+    } catch (err) {
+      console.error('Google Token Verification Error:', err.response?.data || err.message);
+      const error = new Error('Invalid Google token');
+      error.statusCode = 401;
+      throw error;
+    }
+
+    const { email, sub: googleId, given_name, family_name, picture } = googleProfile;
+
+    let user = await prisma.user.findUnique({
+      where: { email },
+      include: {
+        candidate: { select: { id: true, firstName: true, lastName: true, avatar: true } },
+        recruiter: { select: { id: true, companyName: true, companyLogo: true, isVerified: true } },
+        admin: { select: { id: true, firstName: true, lastName: true, avatar: true } },
+      },
+    });
+
+    if (user) {
+      // Update existing user with Google ID if not present
+      if (!user.googleId || user.authProvider === 'LOCAL') {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { googleId, authProvider: 'GOOGLE' },
+          include: {
+            candidate: { select: { id: true, firstName: true, lastName: true, avatar: true } },
+            recruiter: { select: { id: true, companyName: true, companyLogo: true, isVerified: true } },
+            admin: { select: { id: true, firstName: true, lastName: true, avatar: true } },
+          },
+        });
+      }
+    } else {
+      // Create new user
+      // Role is restricted to CANDIDATE or RECRUITER for Google registration as per request
+      const role = (rolePreference === 'RECRUITER' || rolePreference === 'CANDIDATE') ? rolePreference : 'CANDIDATE';
+      
+      user = await prisma.user.create({
+        data: {
+          email,
+          googleId,
+          authProvider: 'GOOGLE',
+          role,
+          ...(role === 'CANDIDATE' && {
+            candidate: {
+              create: {
+                firstName: given_name || '',
+                lastName: family_name || '',
+                avatar: picture || null,
+              },
+            },
+          }),
+          ...(role === 'RECRUITER' && {
+            recruiter: {
+              create: {
+                companyName: `${given_name || 'User'}'s Company`,
+                companyLogo: picture || null,
+                verification: {
+                  create: { status: 'PENDING' },
+                },
+              },
+            },
+          }),
+        },
+        include: {
+          candidate: { select: { id: true, firstName: true, lastName: true, avatar: true } },
+          recruiter: { select: { id: true, companyName: true, companyLogo: true, isVerified: true } },
+          admin: { select: { id: true, firstName: true, lastName: true, avatar: true } },
+        },
+      });
+    }
+
+    if (!user.isActive) {
+      const error = new Error('Account is deactivated');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    const tokens = this.generateTokens(user);
+    await this.saveRefreshToken(user.id, tokens.refreshToken);
+
+    const { password: _, refreshToken: __, ...userData } = user;
     return { user: userData, ...tokens };
   }
 

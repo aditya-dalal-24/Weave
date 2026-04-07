@@ -46,6 +46,7 @@ export const authAPI = {
   login: (data) => api.post('/auth/login', data),
   logout: () => api.post('/auth/logout'),
   me: () => api.get('/auth/me'),
+  googleLogin: (token, role) => api.post('/auth/google', { token, role }),
 };
 
 // Candidate APIs

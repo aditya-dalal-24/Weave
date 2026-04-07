@@ -35,10 +35,12 @@ enum InternshipType {
 model User {
   id            String   @id @default(uuid())
   email         String   @unique
-  password      String
+  password      String?
   role          Role
   isActive      Boolean  @default(true)
   refreshToken  String?
+  googleId      String?  @unique
+  authProvider  String   @default("LOCAL")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

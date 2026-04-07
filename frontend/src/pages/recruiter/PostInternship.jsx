@@ -103,7 +103,7 @@ export default function PostInternship() {
             <input required value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} className={inputClass} placeholder="e.g. 3 months" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 flex items-center gap-1.5"><IndianRupee className="w-4 h-4"/> Stipend (₹/month)</label>
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 flex items-center gap-1.5"><IndianRupee className="w-4 h-4"/> Stipend (/month)</label>
             <input type="number" value={form.stipend} onChange={(e) => setForm({ ...form, stipend: e.target.value })} className={inputClass} placeholder="e.g. 15000" min="0" />
           </div>
           <div>

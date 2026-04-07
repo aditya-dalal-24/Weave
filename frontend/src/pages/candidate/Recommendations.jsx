@@ -82,7 +82,7 @@ export default function Recommendations() {
                     <div className="flex items-center gap-4 mt-2 text-xs text-slate-500 dark:text-slate-400 flex-wrap">
                       {rec.location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {rec.location}</span>}
                       <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {rec.duration}</span>
-                      {rec.stipend > 0 && <span className="flex items-center gap-1"><IndianRupee className="w-3 h-3" /> ₹{rec.stipend}/mo</span>}
+                      {rec.stipend > 0 && <span className="flex items-center gap-1"><IndianRupee className="w-3 h-3" /> {rec.stipend}/mo</span>}
                       <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-medium">{rec.type}</span>
                     </div>
                   </div>

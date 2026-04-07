@@ -24,8 +24,16 @@ const loginSchema = {
   }),
 };
 
+const googleLoginSchema = {
+  body: Joi.object({
+    token: Joi.string().required(),
+    role: Joi.string().valid('CANDIDATE', 'RECRUITER').optional(),
+  }),
+};
+
 router.post('/register', authLimiter, validate(registerSchema), authController.register);
 router.post('/login', authLimiter, validate(loginSchema), authController.login);
+router.post('/google', authLimiter, validate(googleLoginSchema), authController.googleLogin);
 router.post('/refresh', authController.refresh);
 router.post('/logout', authenticate, authController.logout);
 router.get('/me', authenticate, authController.me);

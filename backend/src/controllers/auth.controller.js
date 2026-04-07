@@ -38,6 +38,16 @@ class AuthController {
     }
   }
 
+  async googleLogin(req, res, next) {
+    try {
+      const { token, role } = req.body;
+      const result = await authService.googleLogin(token, role);
+      res.json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async me(req, res, next) {
     try {
       const prisma = require('../config/database');

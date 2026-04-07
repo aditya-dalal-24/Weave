@@ -471,7 +471,7 @@ export default function CandidateProfile() {
                 className={inputClass} placeholder="e.g. Technology, AI/ML, Design" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Minimum Stipend (₹/month)</label>
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Minimum Stipend (/month)</label>
               <input type="number" value={prefForm.minStipend} onChange={(e) => setPrefForm({ ...prefForm, minStipend: e.target.value })}
                 className={inputClass} placeholder="e.g. 15000" />
             </div>

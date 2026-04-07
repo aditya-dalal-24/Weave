@@ -161,34 +161,29 @@ export default function Landing() {
                 ))}
               </div>
             </div>
-            <div className="lg:w-1/2 relative">
-              {/* Abstract decorative cards */}
-              <div className="relative w-full max-w-md mx-auto aspect-square">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary-500 to-teal-400 rounded-[40px] rotate-6 opacity-20 dark:opacity-40 blur-lg animate-pulse" />
-                <div className="absolute inset-4 bg-white dark:bg-[#111827] rounded-[32px] border border-slate-200 dark:border-slate-700 shadow-2xl p-8 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800" />
-                      <div className="space-y-2">
-                        <div className="w-32 h-4 rounded bg-slate-100 dark:bg-slate-800" />
-                        <div className="w-20 h-3 rounded bg-slate-50 dark:bg-slate-900" />
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="w-full h-12 rounded-xl bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800/50 flex items-center justify-between px-4">
-                        <div className="w-24 h-4 rounded bg-primary-200 dark:bg-primary-800" />
-                        <div className="w-12 h-6 rounded-full bg-green-100 dark:bg-green-900/30" />
-                      </div>
-                      <div className="w-full h-12 rounded-xl bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between px-4">
-                        <div className="w-32 h-4 rounded bg-slate-200 dark:bg-slate-700" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="w-full h-12 rounded-xl bg-primary-600 flex items-center justify-center">
-                    <div className="w-24 h-4 rounded bg-white/20" />
-                  </div>
+            <div className="lg:w-1/2 relative group">
+              {/* Decorative Glow */}
+              <div className="absolute -inset-4 bg-gradient-to-br from-primary-500/30 to-teal-400/30 rounded-[40px] blur-3xl opacity-40 group-hover:opacity-70 transition-opacity duration-700" />
+              
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="relative rounded-[28px] border border-white/20 dark:border-slate-700/50 shadow-2xl overflow-hidden bg-slate-900/10 backdrop-blur-sm p-2 transform group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform duration-500"
+              >
+                <img 
+                  src="/assets/sample-recommendation.png" 
+                  alt="Sample Recommendation View" 
+                  className="w-full h-auto rounded-[20px] shadow-lg border border-white/10"
+                />
+                
+                {/* Micro-badge overlay */}
+                <div className="absolute top-8 right-8 px-4 py-2 rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-white/20 shadow-2xl transform rotate-3 flex flex-col items-center group-hover:rotate-6 transition-transform">
+                  <span className="text-[20px] font-extrabold text-green-500">73%</span>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Match Score</span>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>

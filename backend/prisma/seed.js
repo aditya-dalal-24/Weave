@@ -127,7 +127,7 @@ async function main() {
           },
           preferences: {
             create: {
-              locations: ['San Francisco', 'New York', 'Remote'],
+              locations: ['Mumbai', 'Bangalore', 'Remote'],
               types: ['REMOTE', 'HYBRID'],
               industries: ['Technology', 'AI/ML', 'Software'],
               minStipend: 2000,
@@ -173,7 +173,7 @@ async function main() {
           },
           preferences: {
             create: {
-              locations: ['New York', 'Los Angeles'],
+              locations: ['Delhi', 'Gurgaon'],
               types: ['ONSITE', 'HYBRID'],
               industries: ['Design', 'Marketing', 'Media'],
               minStipend: 1500,
@@ -220,7 +220,7 @@ async function main() {
           },
           preferences: {
             create: {
-              locations: ['San Francisco', 'Seattle', 'Remote'],
+              locations: ['Bangalore', 'Hyderabad', 'Remote'],
               types: ['REMOTE'],
               industries: ['Technology', 'AI/ML', 'Data Analytics'],
               minStipend: 3000,
@@ -300,7 +300,7 @@ async function main() {
           },
           preferences: {
             create: {
-              locations: ['New York', 'Chicago'],
+              locations: ['Pune', 'Mumbai'],
               types: ['ONSITE', 'HYBRID'],
               industries: ['Marketing', 'Media', 'E-commerce'],
               minStipend: 1000,
@@ -321,7 +321,7 @@ async function main() {
         company: 'TechCorp Solutions',
         description: 'Join our engineering team to build scalable web applications. You will work with React, Node.js, and cloud technologies. Great opportunity for Computer Science students.',
         type: 'HYBRID',
-        location: 'San Francisco, CA',
+        location: 'Mumbai, Maharashtra',
         industry: 'Technology',
         stipend: 3000,
         duration: '3 months',
@@ -353,7 +353,7 @@ async function main() {
         company: 'TechCorp Solutions',
         description: 'Develop cross-platform mobile apps using React Native. Collaborate with the product team to bring ideas to life.',
         type: 'ONSITE',
-        location: 'New York, NY',
+        location: 'Bangalore, Karnataka',
         industry: 'Technology',
         stipend: 2500,
         duration: '4 months',
@@ -369,7 +369,7 @@ async function main() {
         company: 'Creative Design Studio',
         description: 'Design beautiful interfaces for our clients. Work with our senior designers on real projects. Strong Figma skills required.',
         type: 'HYBRID',
-        location: 'New York, NY',
+        location: 'Delhi, NCR',
         industry: 'Design',
         stipend: 2000,
         duration: '3 months',
@@ -385,7 +385,7 @@ async function main() {
         company: 'Creative Design Studio',
         description: 'Help us create compelling brand strategies for global clients. Develop marketing content and manage social media campaigns.',
         type: 'ONSITE',
-        location: 'Los Angeles, CA',
+        location: 'Pune, Maharashtra',
         industry: 'Marketing',
         stipend: 1800,
         duration: '3 months',
@@ -401,7 +401,7 @@ async function main() {
         company: 'Creative Design Studio',
         description: 'Create visual content for digital and print media. Work alongside experienced designers on high-profile projects.',
         type: 'ONSITE',
-        location: 'New York, NY',
+        location: 'Chennai, Tamil Nadu',
         industry: 'Design',
         stipend: 1500,
         duration: '2 months',
@@ -433,7 +433,7 @@ async function main() {
         company: 'DataFlow Analytics',
         description: 'Build robust backend services for our analytics platform. Work with Node.js, PostgreSQL, and Redis.',
         type: 'HYBRID',
-        location: 'Seattle, WA',
+        location: 'Hyderabad, Telangana',
         industry: 'Technology',
         stipend: 3200,
         duration: '3 months',

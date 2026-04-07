@@ -146,7 +146,7 @@ export default function Applications() {
                   </div>
                   {selectedApp.internship.stipend > 0 && (
                     <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/50 px-3 py-1.5 rounded-lg">
-                      <IndianRupee className="w-4 h-4 text-slate-400" /> ₹{selectedApp.internship.stipend}/month
+                      <IndianRupee className="w-4 h-4 text-slate-400" /> {selectedApp.internship.stipend}/month
                     </div>
                   )}
                   <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/50 px-3 py-1.5 rounded-lg">

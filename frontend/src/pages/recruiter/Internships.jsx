@@ -62,7 +62,7 @@ export default function ManageInternships() {
                     {i.location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {i.location}</span>}
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {i.duration}</span>
                     {i.stipend > 0 ? (
-                      <span className="flex items-center gap-1"><IndianRupee className="w-3 h-3" /> ₹{i.stipend}/mo</span>
+                      <span className="flex items-center gap-1"><IndianRupee className="w-3 h-3" /> {i.stipend}/mo</span>
                     ) : (
                       <span className="flex items-center gap-1"><IndianRupee className="w-3 h-3" /> Unpaid</span>
                     )}
