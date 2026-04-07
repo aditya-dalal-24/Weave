@@ -1,167 +1,126 @@
-# InternMatch — AI-Powered Internship Recommendation System
+# <img src="frontend/public/logo.png" width="40" height="40" align="center" /> Weave 
 
-A full-stack web application that uses AI to match candidates with internship opportunities based on skills, education, and preferences.
+### AI-Powered Internship Recommendation Ecosystem
 
-## Tech Stack
+[![React](https://img.shields.io/badge/Frontend-React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
+[![Node](https://img.shields.io/badge/Backend-Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![FastAPI](https://img.shields.io/badge/AI_Service-FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React + Vite + Tailwind CSS v4 |
-| Backend | Node.js + Express.js |
-| Database | PostgreSQL + Prisma ORM |
-| AI Service | Python + FastAPI + scikit-learn |
-| Real-time | Socket.io |
-| Auth | JWT + bcrypt |
+**Weave** is a cutting-edge, full-stack recruitment platform that leverages artificial intelligence to bridge the gap between ambitious students and industry leaders. By analyzing skills, preferences, and education, Weave provides high-precision internship matches that evolve with the user.
 
-## Prerequisites
+---
 
-- **Node.js** v18+ → [download](https://nodejs.org)
-- **Python** 3.10+ → [download](https://python.org)
-- **PostgreSQL** 14+ → [download](https://postgresql.org/download)
+## 🌟 Key Features
 
-## Setup Instructions
+### 🎓 For Candidates
+- **AI Matchmaker**: Receive personalized internship suggestions with a detailed % compatibility breakdown.
+- **Smart Dashboard**: Track profile strength, application status, and platform activity in real-time.
+- **Smart Profile**: Build a resume-ready profile with automated skill tagging and education history.
+- **Live Chat**: Connect directly with recruiters through an integrated real-time messaging system.
 
-### 1. Create PostgreSQL Database
+### 🏢 For Recruiters
+- **Candidate Alpha-Rank**: View applicants ranked by their AI match score for each internship.
+- **Hiring Pipeline**: Seamlessly transition candidates from *Applied* to *Shortlisted* and *Selected*.
+- **Internship Management**: Create, edit, and track visibility for multiple listings with ease.
+- **Verification Badge**: Secure your company's profile through the admin-led verification process.
 
-```sql
--- Connect to PostgreSQL and run:
-CREATE DATABASE internship_db;
-```
+### 🛡️ Security & Authentication
+- **Gmail OTP**: 6-digit email verification on registration to ensure a bot-free ecosystem.
+- **Google OAuth 2.0**: One-click, secure registration and login with Google.
+- **JWT Authorization**: Robust session management with Access and Refresh token rotation.
 
-### 2. Backend Setup
+---
 
+## 🧠 The AI Engine
+
+Our recommendation engine uses a multi-dimensional scoring algorithm to ensure the highest quality matches:
+
+| Factor | Weight | Strategy |
+| :--- | :--- | :--- |
+| **Skill Similarity** | **50%** | Cosine similarity between candidate skill vectors and internship requirements. |
+| **Preference Alignment** | **30%** | Matches location (Onsite/Remote), industries, and stipend expectations. |
+| **Education Context** | **20%** | Analyzes field of study and degree level relevance. |
+
+---
+
+## 💻 Tech Stack
+
+- **Frontend**: React 18, Vite, Tailwind CSS v4, Framer Motion (Animations), Lucide React (Icons).
+- **Backend**: Node.js, Express.js, Prisma ORM, Socket.io (Real-time).
+- **AI Service**: Python 3.10, FastAPI, Scikit-learn (Machine Learning).
+- **Database**: PostgreSQL (Structured data), Vector-like similarity processing.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v18+)
+- [Python](https://www.python.org/) (3.10+)
+- [PostgreSQL](https://www.postgresql.org/) (v14+)
+
+### 1. Unified Setup
+
+#### 📦 Backend
 ```bash
 cd backend
-
-# Update .env with your PostgreSQL credentials
-# DATABASE_URL="postgresql://YOUR_USER:YOUR_PASSWORD@localhost:5432/internship_db"
-
-# Install dependencies
 npm install
-
-# Generate Prisma client & push schema
 npx prisma db push
-
-# Seed sample data
-node prisma/seed.js
-
-# Start backend
+node prisma/seed.js # Optional: Seed sample data
 npm run dev
 ```
 
-Backend runs on **http://localhost:5000**
-
-### 3. AI Service Setup
-
+#### 🤖 AI Service
 ```bash
 cd ai-service
-
-# Create virtual environment
 python -m venv venv
-
-# Activate (Windows)
-.\venv\Scripts\activate
-
-# Install dependencies
+source venv/bin/activate # windows: .\venv\Scripts\activate
 pip install -r requirements.txt
-
-# Start AI service
 python main.py
 ```
 
-AI service runs on **http://localhost:8000**
-
-### 4. Frontend Setup
-
+#### 🎨 Frontend
 ```bash
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start dev server
 npm run dev
 ```
 
-Frontend runs on **http://localhost:5173**
+---
 
-## Demo Accounts
+## 🔑 Environment Variables
 
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@internmatch.com | password123 |
-| Recruiter | hr@techcorp.com | password123 |
-| Recruiter | careers@designstudio.com | password123 |
-| Candidate | alice@student.com | password123 |
-| Candidate | bob@student.com | password123 |
-| Candidate | carol@student.com | password123 |
+### Backend `.env`
+| Variable | Description |
+| :--- | :--- |
+| `DATABASE_URL` | PostgreSQL connection string |
+| `JWT_SECRET` | Secret key for access tokens |
+| `GOOGLE_CLIENT_ID` | Google Developer Console Client ID |
+| `EMAIL_USER` | Gmail address for OTP delivery |
+| `EMAIL_PASS` | Gmail App Password (16 chars) |
 
-## Features
+### Frontend `.env`
+| Variable | Description |
+| :--- | :--- |
+| `VITE_API_URL` | Backend server URL (default: http://localhost:5000) |
+| `VITE_GOOGLE_CLIENT_ID` | Matching Google Client ID for OAuth |
 
-### Candidate
-- Dashboard with stats and profile strength
-- Profile management (personal info, education, skills, preferences)
-- AI-powered internship recommendations with match % and breakdown
-- Application tracking (Applied → Shortlisted → Selected)
-- Real-time chat with recruiters
-- Profile improvement suggestions
+---
 
-### Recruiter
-- Dashboard with hiring stats
-- Create/edit/delete internships
-- View and filter applicants by skills, education, status
-- Shortlist, select, or reject candidates (with auto-notification)
-- Real-time chat with candidates
+## 👥 Demo Access
 
-### Admin
-- Platform-wide dashboard and stats
-- User management (search, filter, activate/deactivate)
-- Recruiter verification (approve/reject)
+| Account Type | Email | Password |
+| :--- | :--- | :--- |
+| **Admin** | `admin@internmatch.com` | `password123` |
+| **Recruiter** | `hr@techcorp.com` | `password123` |
+| **Candidate** | `alice@student.com` | `password123` |
 
-### AI Recommendation Engine
-- **Skills Match (50%)**: Cosine similarity between candidate and internship skill vectors
-- **Preferences Match (30%)**: Location, type, industry, stipend compatibility
-- **Education Relevance (20%)**: Field and degree matching
+---
 
-## API Endpoints
+## 📜 License
+Distibuted under the MIT License. See `LICENSE` for more information.
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | /api/auth/register | Register new user |
-| POST | /api/auth/login | Login |
-| POST | /api/auth/refresh | Refresh access token |
-| GET | /api/candidate/dashboard | Candidate stats |
-| GET | /api/candidate/profile | Get profile |
-| PUT | /api/candidate/profile | Update profile |
-| GET | /api/recommendations | Get AI recommendations |
-| POST | /api/applications | Apply to internship |
-| GET | /api/applications | List applications |
-| POST | /api/internships | Create internship |
-| GET | /api/internships | List internships |
-| GET | /api/recruiter/applicants | View applicants |
-| GET | /api/admin/dashboard | Admin stats |
-| GET | /api/chat/conversations | List conversations |
-| POST | /api/chat/messages | Send message |
-
-## Project Structure
-
-```
-├── backend/
-│   ├── prisma/          # Schema + seed
-│   └── src/
-│       ├── config/      # DB config
-│       ├── controllers/ # Request handlers
-│       ├── middleware/   # Auth, validation, rate-limit
-│       ├── routes/      # API routes
-│       ├── services/    # Business logic
-│       └── socket/      # Socket.io handlers
-├── frontend/
-│   └── src/
-│       ├── components/  # Layout, ProtectedRoute
-│       ├── context/     # Auth, Socket contexts
-│       ├── pages/       # All page components
-│       └── services/    # API client
-└── ai-service/
-    ├── main.py          # FastAPI app
-    └── recommendation.py # AI engine
-```
+<p align="center">
+  Made with ❤️ for the future of recruitment.
+</p>
