@@ -44,9 +44,39 @@ class AdminService {
       include: { recruiter: { select: { companyName: true } } },
     });
 
+    const recentCandidates = await prisma.user.findMany({
+      where: { role: 'CANDIDATE' },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        candidate: { select: { firstName: true, lastName: true } },
+      },
+    });
+
+    const recentRecruiters = await prisma.user.findMany({
+      where: { role: 'RECRUITER' },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        recruiter: { select: { companyName: true, isVerified: true } },
+      },
+    });
+
     return {
       stats: { totalUsers, totalCandidates, totalRecruiters, totalInternships, totalApplications, pendingVerifications },
       recentUsers,
+      recentCandidates,
+      recentRecruiters,
       applicationsByStatus,
       recentInternships,
       recentVerifications,

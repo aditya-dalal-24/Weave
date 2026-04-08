@@ -121,10 +121,12 @@ export default function AdminDashboard() {
                     </div>
                   );
 
-                  if (selectedStat.label.includes('Users') || selectedStat.label === 'Candidates' || selectedStat.label === 'Recruiters') {
+                  if (selectedStat.label === 'Total Users') {
                     filtered = data.recentUsers || [];
-                    if (selectedStat.label === 'Candidates') filtered = filtered.filter(u => u.role === 'CANDIDATE');
-                    else if (selectedStat.label === 'Recruiters') filtered = filtered.filter(u => u.role === 'RECRUITER');
+                  } else if (selectedStat.label === 'Candidates') {
+                    filtered = data.recentCandidates || [];
+                  } else if (selectedStat.label === 'Recruiters') {
+                    filtered = data.recentRecruiters || [];
                   } else if (selectedStat.label === 'Pending Verifications') {
                     viewAllLink = "/admin/verifications";
                     viewAllText = "Review Verifications";
