@@ -100,9 +100,17 @@ export default function Applicants() {
                     </div>
                   )}
                   {app.candidate.education?.[0] && (
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 ml-11 flex items-center gap-1">
-                      <GraduationCap className="w-3 h-3" /> {app.candidate.education[0].degree} in {app.candidate.education[0].field}
-                    </p>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 ml-11 flex flex-col gap-1">
+                      <div className="flex items-center gap-1">
+                        <GraduationCap className="w-3 h-3" /> 
+                        <span className="font-medium text-slate-700 dark:text-slate-300">{app.candidate.education[0].degree}</span> in {app.candidate.education[0].field}
+                      </div>
+                      {app.candidate.education[0].grade && (
+                        <div className="flex items-center gap-1 text-[10px]">
+                           <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-bold text-slate-600 dark:text-slate-400">Score: {app.candidate.education[0].grade}</span>
+                        </div>
+                      )}
+                    </div>
                   )}
                   {typeof app.matchScore === 'number' && (
                     <span className="ml-11 mt-1.5 inline-block text-xs font-semibold px-2 py-0.5 rounded-full bg-primary-50 dark:bg-primary-900/25 text-primary-700 dark:text-primary-300">{app.matchScore}% match</span>

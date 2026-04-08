@@ -16,7 +16,7 @@ export default function CandidateProfile() {
   const [activeTab, setActiveTab] = useState('personal');
   const [newSkill, setNewSkill] = useState({ name: '', proficiency: 'Intermediate' });
   const [showSkillForm, setShowSkillForm] = useState(false);
-  const [newEdu, setNewEdu] = useState({ institution: '', degree: '', field: '', startDate: '', endDate: '', grade: '' });
+  const [newEdu, setNewEdu] = useState({ institution: '', degree: '', field: '', startDate: '', endDate: '', grade: '', scale: ' / 10' });
   const [showEduForm, setShowEduForm] = useState(false);
   const [editingEdu, setEditingEdu] = useState(null);
   const [personalForm, setPersonalForm] = useState({ firstName: '', lastName: '', phone: '', address: '', gender: '', bio: '' });
@@ -139,14 +139,24 @@ export default function CandidateProfile() {
       toast.error('Please fill required fields'); return;
     }
     try {
+      // Format grade with scale if provided
+      const formattedEdu = { ...newEdu };
+      if (newEdu.grade && newEdu.scale) {
+        if (newEdu.scale === '%') {
+          formattedEdu.grade = `${newEdu.grade}%`;
+        } else {
+          formattedEdu.grade = `${newEdu.grade}${newEdu.scale}`;
+        }
+      }
+
       if (editingEdu) {
-        await candidateAPI.updateEducation(editingEdu, newEdu);
+        await candidateAPI.updateEducation(editingEdu, formattedEdu);
         toast.success('Education updated!');
       } else {
-        await candidateAPI.addEducation(newEdu);
+        await candidateAPI.addEducation(formattedEdu);
         toast.success('Education added!');
       }
-      setNewEdu({ institution: '', degree: '', field: '', startDate: '', endDate: '', grade: '' });
+      setNewEdu({ institution: '', degree: '', field: '', startDate: '', endDate: '', grade: '', scale: ' / 10' });
       setEditingEdu(null);
       setShowEduForm(false);
       loadProfile();
@@ -154,13 +164,30 @@ export default function CandidateProfile() {
   };
 
   const handleEditEducation = (edu) => {
+    let parsedGrade = '';
+    let parsedScale = ' / 10';
+    
+    if (edu.grade) {
+      if (edu.grade.includes('%')) {
+        parsedGrade = edu.grade.replace('%', '');
+        parsedScale = '%';
+      } else if (edu.grade.includes('/')) {
+        const parts = edu.grade.split('/');
+        parsedGrade = parts[0].trim();
+        parsedScale = ` / ${parts[1].trim()}`;
+      } else {
+        parsedGrade = edu.grade;
+      }
+    }
+
     setNewEdu({ 
        institution: edu.institution, 
        degree: edu.degree, 
        field: edu.field, 
        startDate: edu.startDate ? new Date(edu.startDate).toISOString().substring(0, 10) : '', 
        endDate: edu.endDate ? new Date(edu.endDate).toISOString().substring(0, 10) : '', 
-       grade: edu.grade || '' 
+       grade: parsedGrade,
+       scale: parsedScale
     });
     setEditingEdu(edu.id);
     setShowEduForm(true);
@@ -352,7 +379,14 @@ export default function CandidateProfile() {
                 <input value={newEdu.institution} onChange={(e) => setNewEdu({ ...newEdu, institution: e.target.value })} placeholder="Institution *" className={inputClass} />
                 <input value={newEdu.degree} onChange={(e) => setNewEdu({ ...newEdu, degree: e.target.value })} placeholder="Degree *" className={inputClass} />
                 <input value={newEdu.field} onChange={(e) => setNewEdu({ ...newEdu, field: e.target.value })} placeholder="Field of Study *" className={inputClass} />
-                <input value={newEdu.grade} onChange={(e) => setNewEdu({ ...newEdu, grade: e.target.value })} placeholder="Grade (optional)" className={inputClass} />
+                <div className="flex gap-2">
+                  <input type="number" step="0.01" value={newEdu.grade} onChange={(e) => setNewEdu({ ...newEdu, grade: e.target.value })} placeholder="Grade / CGPA" className={`${inputClass} flex-1`} />
+                  <select value={newEdu.scale} onChange={(e) => setNewEdu({ ...newEdu, scale: e.target.value })} className={`${inputClass} w-28`}>
+                    <option value=" / 10">/ 10</option>
+                    <option value=" / 4">/ 4</option>
+                    <option value="%">%</option>
+                  </select>
+                </div>
                 <input type="date" value={newEdu.startDate} onChange={(e) => setNewEdu({ ...newEdu, startDate: e.target.value })} className={inputClass} />
                 <input type="date" value={newEdu.endDate} onChange={(e) => setNewEdu({ ...newEdu, endDate: e.target.value })} className={inputClass} />
               </div>

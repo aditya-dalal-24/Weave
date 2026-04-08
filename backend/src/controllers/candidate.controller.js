@@ -135,14 +135,67 @@ class CandidateController {
                   degree: degreeGuess,
                   field: 'Extracted Field',
                });
+                             // Refined CGPA/Score Extraction
+               const gradeRegex = /(?:cgpa|gpa|percentage|score|marks?)\s*[:\-]?\s*(\d+(?:\.\d+)?)\s*(?:\/\s*(\d+(?:\.\d+)?))?\s*%?/gi;
+               let matches;
+               let extractedGrade = null;
                
+               while ((matches = gradeRegex.exec(text)) !== null) {
+                 const valueStr = matches[1];
+                 const scaleStr = matches[2];
+                 const isPercentage = matches[0].includes('%');
+                 const value = parseFloat(valueStr);
+                 
+                 // Reject if it looks like a year (e.g., 2024-2028) and isn't specifically labeled as a grade with a decimal
+                 if (!valueStr.includes('.') && value >= 1900 && value <= 2100 && !scaleStr) continue;
+                 
+                 const roundedValue = value.toFixed(2).replace(/\.00$/, ''); // Round to 2 decimal places, remove redundant .00
+                 
+                 if (isPercentage || value > 10) {
+                   extractedGrade = `${roundedValue}%`;
+                 } else if (scaleStr === '4' || (value <= 4 && scaleStr !== '10')) {
+                   extractedGrade = `${roundedValue}/4`;
+                 } else {
+                   extractedGrade = `${roundedValue}/10`;
+                 }
+                 break; // Take the first valid score found
+               }
+
+               // Extract Timeline (Start and End Years)
+               let startDate = '2020-01-01'; // Default Fallback
+               let endDate = '2024-01-01';   // Default Fallback
+               
+               const yearRangeRegex = /(20\d{2})\s*[-–—to\s]+\s*(20\d{2}|present|ongoing|current)/i;
+               const nextLine = lines[lines.indexOf(line) + 1] || "";
+               const combinedLine = `${line} ${nextLine}`;
+               const timelineMatch = combinedLine.match(yearRangeRegex);
+               
+               if (timelineMatch) {
+                 startDate = `${timelineMatch[1]}-01-01`;
+                 const endPart = timelineMatch[2].toLowerCase();
+                 if (['present', 'ongoing', 'current'].includes(endPart)) {
+                   endDate = null;
+                 } else {
+                   endDate = `${timelineMatch[2]}-01-01`;
+                 }
+               } else {
+                 // Try to find ANY year if range is not found
+                 const singleYearMatch = combinedLine.match(/(20\d{2})/);
+                 if (singleYearMatch) {
+                   const endYear = parseInt(singleYearMatch[1]);
+                   endDate = `${endYear}-01-01`;
+                   startDate = `${endYear - 4}-01-01`; // Guess a 4-year degree
+                 }
+               }
+
                try {
                   await candidateService.addEducation(req.user.id, {
                      institution: hasInst ? line.trim().substring(0, 50) : 'Extracted Institution',
                      degree: degreeGuess,
                      field: 'Extracted Field (Please edit)',
-                     startDate: '2020-01-01',
-                     endDate: '2024-01-01'
+                     startDate: startDate,
+                     endDate: endDate,
+                     grade: extractedGrade
                   });
                } catch (ignored) {}
                break; // limit to 1 entry for now
